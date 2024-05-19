@@ -22,6 +22,14 @@ type structType struct {
 	asGetters map[string]struct{}
 }
 
+var wellKnownTypes = map[string]string{
+	"int64":   "Int()",
+	"uint64":  "Uint()",
+	"float64": "Float()",
+	"bool":    "Bool()",
+	"string":  "String()",
+}
+
 func (s *structType) MakeStore(typ, jsonDefault string) {
 	s.AddField(StructField{
 		Name: "_path",
@@ -93,14 +101,23 @@ func (s *structType) MakeStore(typ, jsonDefault string) {
 	`, s.name, strconv.Quote(jsonDefault)))
 
 	if typ != "" {
-		s.methods = append(s.methods, fmt.Sprintf(`
-		func (r %v) Value() %v {
-			res := r.result()
-			var v %v
-			_ = json.Unmarshal([]byte(res.Raw), &v)
-			return v
+		if accessor, ok := wellKnownTypes[typ]; ok {
+			s.methods = append(s.methods, fmt.Sprintf(`
+			func (r %v) Value() %v {
+				res := r.result()
+				return res.%v
+			}`, s.name, typ, accessor))
+		} else {
+			s.methods = append(s.methods, fmt.Sprintf(`
+			func (r %v) Value() %v {
+				res := r.result()
+				var v %v
+				_ = json.Unmarshal([]byte(res.Raw), &v)
+				return v
+			}`, s.name, typ, typ))
 		}
 
+		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Set(v %v) error {
 			r.ensureJson()
 			if r._path == "" {
@@ -116,7 +133,7 @@ func (s *structType) MakeStore(typ, jsonDefault string) {
 			r.setJson(res)
 			return nil
 		}
-		`, s.name, typ, typ, s.name, typ))
+		`, s.name, typ))
 	} else {
 		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Set(v %v) error {
@@ -173,7 +190,7 @@ func (s *structType) AddIndexGetter(styp string) {
 		func (r %v) Len() int {
 			res := r.result()
 			if !res.IsArray() { return 0 }
-			return int(res.Get("#").Value().(float64))
+			return int(res.Get("#").Int())
 		}
 	`, s.name))
 }

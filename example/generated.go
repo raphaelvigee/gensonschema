@@ -208,11 +208,8 @@ type Bool struct {
 
 func (r Bool) Value() bool {
 	res := r.result()
-	var v bool
-	_ = json.Unmarshal([]byte(res.Raw), &v)
-	return v
+	return res.Bool()
 }
-
 func (r *Bool) Set(v bool) error {
 	r.ensureJson()
 	if r._path == "" {
@@ -391,7 +388,7 @@ func (r Fruits) Len() int {
 	if !res.IsArray() {
 		return 0
 	}
-	return int(res.Get("#").Value().(float64))
+	return int(res.Get("#").Int())
 }
 
 func (r Fruits) Set(v Fruits) error {
@@ -472,11 +469,8 @@ type Int64 struct {
 
 func (r Int64) Value() int64 {
 	res := r.result()
-	var v int64
-	_ = json.Unmarshal([]byte(res.Raw), &v)
-	return v
+	return res.Int()
 }
-
 func (r *Int64) Set(v int64) error {
 	r.ensureJson()
 	if r._path == "" {
@@ -1020,11 +1014,8 @@ type String struct {
 
 func (r String) Value() string {
 	res := r.result()
-	var v string
-	_ = json.Unmarshal([]byte(res.Raw), &v)
-	return v
+	return res.String()
 }
-
 func (r *String) Set(v string) error {
 	r.ensureJson()
 	if r._path == "" {
@@ -1119,7 +1110,7 @@ func (r Vegetables) Len() int {
 	if !res.IsArray() {
 		return 0
 	}
-	return int(res.Get("#").Value().(float64))
+	return int(res.Get("#").Int())
 }
 
 func (r Vegetables) Set(v Vegetables) error {

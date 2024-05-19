@@ -1,6 +1,6 @@
 # gensonschema
 
-> **G**enerate J**son** **Schema**
+> **G**enerate **G**o from J**son** **Schema**
 
 gensonschema generate type-safe code from JSON Schema, with full support for allOf, oneOf, anyOf
 

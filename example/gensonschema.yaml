@@ -1,0 +1,22 @@
+output:
+  package: gen
+  file: generated.go
+
+resources:
+  - url: simple.yaml
+    source: ./testdata/simple.yaml
+  - url: defs.yaml
+    source: ./testdata/defs.yaml
+  - url: oneof.yaml
+    source: ./testdata/oneof.yaml
+  - url: oneofroot.yaml
+    source: ./testdata/oneofroot.yaml
+  - url: allof.yaml
+    source: ./testdata/allof.yaml
+
+generate:
+  - simple.yaml
+  - defs.yaml
+  - oneof.yaml
+  - oneofroot.yaml
+  - allof.yaml

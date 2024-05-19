@@ -1,0 +1,39 @@
+{
+  "description": "schema validating people and vehicles",
+  "title": "OneOf",
+  "type": "object",
+  "properties": {
+    "data": {
+      "oneOf": [
+        {
+          "type": "object",
+          "title": "Person",
+          "properties": {
+            "firstName": {
+              "type": "string"
+            },
+            "lastName": {
+              "type": "string"
+            },
+            "sport": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "Vehicle",
+          "properties": {
+            "brand": {
+              "type": "string"
+            },
+            "price": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

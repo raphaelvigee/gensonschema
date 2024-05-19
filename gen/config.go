@@ -7,6 +7,7 @@ import (
 
 type Config struct {
 	Out            io.Writer
+	PackageName    string
 	Schemas        []*jsonschema.Schema
 	ShouldGenerate func(schema *jsonschema.Schema) bool
 }

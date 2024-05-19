@@ -7,6 +7,7 @@ import (
 	"github.com/raphaelvigee/gensonschema/gen"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go/format"
+	"golang.org/x/tools/imports"
 	"log"
 	"os"
 	"path/filepath"
@@ -53,8 +54,9 @@ func entrypoint() error {
 	var buf bytes.Buffer
 
 	err = gen.Gen(gen.Config{
-		Out:     &buf,
-		Schemas: schemas,
+		PackageName: config.Output.Package,
+		Out:         &buf,
+		Schemas:     schemas,
 		ShouldGenerate: func(schema *jsonschema.Schema) bool {
 			fmt.Println(schema.Location)
 			return true
@@ -64,10 +66,17 @@ func entrypoint() error {
 		return err
 	}
 
-	formatted, err := format.Source(buf.Bytes())
+	formatted, err := imports.Process("", buf.Bytes(), nil)
 	if err != nil {
 		fmt.Println(err)
 		formatted = buf.Bytes()
+	}
+
+	b, err := format.Source(formatted)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		formatted = b
 	}
 
 	err = os.MkdirAll(filepath.Dir(config.Output.File), os.ModePerm)

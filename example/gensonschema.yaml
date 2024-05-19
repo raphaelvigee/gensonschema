@@ -3,20 +3,20 @@ output:
   file: generated.go
 
 resources:
-  - url: simple.yaml
-    source: ./testdata/simple.yaml
-  - url: defs.yaml
-    source: ./testdata/defs.yaml
-  - url: oneof.yaml
-    source: ./testdata/oneof.yaml
-  - url: oneofroot.yaml
-    source: ./testdata/oneofroot.yaml
-  - url: allof.yaml
-    source: ./testdata/allof.yaml
+  - url: simple.json
+    source: ./testdata/simple.json
+  - url: defs.json
+    source: ./testdata/defs.json
+  - url: oneof.json
+    source: ./testdata/oneof.json
+  - url: oneofroot.json
+    source: ./testdata/oneofroot.json
+  - url: allof.json
+    source: ./testdata/allof.json
 
 generate:
-  - simple.yaml
-  - defs.yaml
-  - oneof.yaml
-  - oneofroot.yaml
-  - allof.yaml
+  - simple.json
+  - defs.json
+  - oneof.json
+  - oneofroot.json
+  - allof.json

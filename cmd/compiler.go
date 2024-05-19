@@ -11,19 +11,10 @@ import (
 )
 
 func openYaml(url string) (io.ReadCloser, error) {
-	f, err := os.Open(url)
+	b, err := os.ReadFile(url)
 	if err != nil {
 		return nil, err
 	}
-
-	defer f.Close()
-
-	b, err := io.ReadAll(f)
-	if err != nil {
-		return nil, err
-	}
-
-	_ = f.Close()
 
 	var m interface{}
 	err = yaml.Unmarshal(b, &m)

@@ -7,7 +7,6 @@ import (
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
-	"golang.org/x/exp/slices"
 )
 
 func pathJoin(p1, p2 string) string {
@@ -23,6 +22,35 @@ type AllOf struct {
 	_json *[]byte
 }
 
+func (r *AllOf) GetBilling_address() *DefinitionsAddress {
+	r.ensureJson()
+	return &DefinitionsAddress{
+		_path: pathJoin(r._path, "billing_address"),
+		_json: r._json,
+	}
+}
+
+func (r *AllOf) GetShipping_address() *ShippingAddress {
+	r.ensureJson()
+	return &ShippingAddress{
+		_path: pathJoin(r._path, "shipping_address"),
+		_json: r._json,
+	}
+}
+
+func (r AllOf) Set(v AllOf) error {
+	if r._path == "" {
+		r.setJson(v.json())
+		return nil
+	}
+	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
 func (r AllOf) MarshalJSON() ([]byte, error) {
 	return r.json(), nil
 }
@@ -36,7 +64,8 @@ func (r *AllOf) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = AllOf{_json: &bcopy}
 	return nil
@@ -80,7 +109,28 @@ func (r AllOf) Delete() error {
 	return nil
 }
 
-func (r AllOf) Set(v AllOf) error {
+type ArraysSchema struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *ArraysSchema) GetFruits() *Fruits {
+	r.ensureJson()
+	return &Fruits{
+		_path: pathJoin(r._path, "fruits"),
+		_json: r._json,
+	}
+}
+
+func (r *ArraysSchema) GetVegetables() *Vegetables {
+	r.ensureJson()
+	return &Vegetables{
+		_path: pathJoin(r._path, "vegetables"),
+		_json: r._json,
+	}
+}
+
+func (r ArraysSchema) Set(v ArraysSchema) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -91,27 +141,6 @@ func (r AllOf) Set(v AllOf) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *AllOf) GetBilling_address() *DefinitionsAddress {
-	r.ensureJson()
-	return &DefinitionsAddress{
-		_path: pathJoin(r._path, "billing_address"),
-		_json: r._json,
-	}
-}
-
-func (r *AllOf) GetShipping_address() *ShippingAddress {
-	r.ensureJson()
-	return &ShippingAddress{
-		_path: pathJoin(r._path, "shipping_address"),
-		_json: r._json,
-	}
-}
-
-type ArraysSchema struct {
-	_path string
-	_json *[]byte
 }
 
 func (r ArraysSchema) MarshalJSON() ([]byte, error) {
@@ -127,7 +156,8 @@ func (r *ArraysSchema) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = ArraysSchema{_json: &bcopy}
 	return nil
@@ -171,38 +201,34 @@ func (r ArraysSchema) Delete() error {
 	return nil
 }
 
-func (r ArraysSchema) Set(v ArraysSchema) error {
+type Bool struct {
+	_path string
+	_json *[]byte
+}
+
+func (r Bool) Value() bool {
+	res := r.result()
+	var v bool
+	_ = json.Unmarshal([]byte(res.Raw), &v)
+	return v
+}
+
+func (r *Bool) Set(v bool) error {
+	r.ensureJson()
 	if r._path == "" {
-		r.setJson(v.json())
+		b, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		r.setJson(b)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+	res, err := sjson.SetBytes(r.json(), r.path(), v)
 	if err != nil {
 		return err
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *ArraysSchema) GetFruits() *Fruits {
-	r.ensureJson()
-	return &Fruits{
-		_path: pathJoin(r._path, "fruits"),
-		_json: r._json,
-	}
-}
-
-func (r *ArraysSchema) GetVegetables() *Vegetables {
-	r.ensureJson()
-	return &Vegetables{
-		_path: pathJoin(r._path, "vegetables"),
-		_json: r._json,
-	}
-}
-
-type Bool struct {
-	_path string
-	_json *[]byte
 }
 
 func (r Bool) MarshalJSON() ([]byte, error) {
@@ -218,7 +244,8 @@ func (r *Bool) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = Bool{_json: &bcopy}
 	return nil
@@ -262,34 +289,30 @@ func (r Bool) Delete() error {
 	return nil
 }
 
-func (r Bool) Value() bool {
-	res := r.result()
-	var v bool
-	_ = json.Unmarshal([]byte(res.Raw), &v)
-	return v
+type DefinitionsAddress struct {
+	_path string
+	_json *[]byte
 }
 
-func (r *Bool) Set(v bool) error {
+func (r *DefinitionsAddress) GetCity() *String {
 	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "city"),
+		_json: r._json,
+	}
+}
+
+func (r DefinitionsAddress) Set(v DefinitionsAddress) error {
 	if r._path == "" {
-		b, err := json.Marshal(v)
-		if err != nil {
-			return err
-		}
-		r.setJson(b)
+		r.setJson(v.json())
 		return nil
 	}
-	res, err := sjson.SetBytes(r.json(), r.path(), v)
+	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
 	if err != nil {
 		return err
 	}
 	r.setJson(res)
 	return nil
-}
-
-type DefinitionsAddress struct {
-	_path string
-	_json *[]byte
 }
 
 func (r DefinitionsAddress) MarshalJSON() ([]byte, error) {
@@ -305,7 +328,8 @@ func (r *DefinitionsAddress) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = DefinitionsAddress{_json: &bcopy}
 	return nil
@@ -349,7 +373,28 @@ func (r DefinitionsAddress) Delete() error {
 	return nil
 }
 
-func (r DefinitionsAddress) Set(v DefinitionsAddress) error {
+type Fruits struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *Fruits) At(i int) *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, fmt.Sprint(i)),
+		_json: r._json,
+	}
+}
+
+func (r Fruits) Len() int {
+	res := r.result()
+	if !res.IsArray() {
+		return 0
+	}
+	return int(res.Get("#").Value().(float64))
+}
+
+func (r Fruits) Set(v Fruits) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -360,19 +405,6 @@ func (r DefinitionsAddress) Set(v DefinitionsAddress) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *DefinitionsAddress) GetCity() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "city"),
-		_json: r._json,
-	}
-}
-
-type Fruits struct {
-	_path string
-	_json *[]byte
 }
 
 func (r Fruits) MarshalJSON() ([]byte, error) {
@@ -388,7 +420,8 @@ func (r *Fruits) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = Fruits{_json: &bcopy}
 	return nil
@@ -432,38 +465,34 @@ func (r Fruits) Delete() error {
 	return nil
 }
 
-func (r Fruits) Set(v Fruits) error {
+type Int64 struct {
+	_path string
+	_json *[]byte
+}
+
+func (r Int64) Value() int64 {
+	res := r.result()
+	var v int64
+	_ = json.Unmarshal([]byte(res.Raw), &v)
+	return v
+}
+
+func (r *Int64) Set(v int64) error {
+	r.ensureJson()
 	if r._path == "" {
-		r.setJson(v.json())
+		b, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		r.setJson(b)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+	res, err := sjson.SetBytes(r.json(), r.path(), v)
 	if err != nil {
 		return err
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *Fruits) At(i int) *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, fmt.Sprint(i)),
-		_json: r._json,
-	}
-}
-
-func (r Fruits) Len() int {
-	res := r.result()
-	if !res.IsArray() {
-		return 0
-	}
-	return int(res.Get("#").Value().(float64))
-}
-
-type Int64 struct {
-	_path string
-	_json *[]byte
 }
 
 func (r Int64) MarshalJSON() ([]byte, error) {
@@ -479,7 +508,8 @@ func (r *Int64) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = Int64{_json: &bcopy}
 	return nil
@@ -523,34 +553,30 @@ func (r Int64) Delete() error {
 	return nil
 }
 
-func (r Int64) Value() int64 {
-	res := r.result()
-	var v int64
-	_ = json.Unmarshal([]byte(res.Raw), &v)
-	return v
+type OneOf struct {
+	_path string
+	_json *[]byte
 }
 
-func (r *Int64) Set(v int64) error {
+func (r *OneOf) GetData() *OneOfData {
 	r.ensureJson()
+	return &OneOfData{
+		_path: pathJoin(r._path, "data"),
+		_json: r._json,
+	}
+}
+
+func (r OneOf) Set(v OneOf) error {
 	if r._path == "" {
-		b, err := json.Marshal(v)
-		if err != nil {
-			return err
-		}
-		r.setJson(b)
+		r.setJson(v.json())
 		return nil
 	}
-	res, err := sjson.SetBytes(r.json(), r.path(), v)
+	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
 	if err != nil {
 		return err
 	}
 	r.setJson(res)
 	return nil
-}
-
-type OneOf struct {
-	_path string
-	_json *[]byte
 }
 
 func (r OneOf) MarshalJSON() ([]byte, error) {
@@ -566,7 +592,8 @@ func (r *OneOf) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = OneOf{_json: &bcopy}
 	return nil
@@ -610,7 +637,28 @@ func (r OneOf) Delete() error {
 	return nil
 }
 
-func (r OneOf) Set(v OneOf) error {
+type OneOfData struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *OneOfData) AsPerson() *Person {
+	r.ensureJson()
+	return &Person{
+		_path: r._path,
+		_json: r._json,
+	}
+}
+
+func (r *OneOfData) AsVehicle() *Vehicle {
+	r.ensureJson()
+	return &Vehicle{
+		_path: r._path,
+		_json: r._json,
+	}
+}
+
+func (r OneOfData) Set(v OneOfData) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -621,19 +669,6 @@ func (r OneOf) Set(v OneOf) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *OneOf) GetData() *OneOfData {
-	r.ensureJson()
-	return &OneOfData{
-		_path: pathJoin(r._path, "data"),
-		_json: r._json,
-	}
-}
-
-type OneOfData struct {
-	_path string
-	_json *[]byte
 }
 
 func (r OneOfData) MarshalJSON() ([]byte, error) {
@@ -649,7 +684,8 @@ func (r *OneOfData) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = OneOfData{_json: &bcopy}
 	return nil
@@ -693,7 +729,28 @@ func (r OneOfData) Delete() error {
 	return nil
 }
 
-func (r OneOfData) Set(v OneOfData) error {
+type OneOfOneOfRootObj struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *OneOfOneOfRootObj) AsPerson() *Person {
+	r.ensureJson()
+	return &Person{
+		_path: r._path,
+		_json: r._json,
+	}
+}
+
+func (r *OneOfOneOfRootObj) AsVehicle() *Vehicle {
+	r.ensureJson()
+	return &Vehicle{
+		_path: r._path,
+		_json: r._json,
+	}
+}
+
+func (r OneOfOneOfRootObj) Set(v OneOfOneOfRootObj) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -704,27 +761,6 @@ func (r OneOfData) Set(v OneOfData) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *OneOfData) AsPerson() *Person {
-	r.ensureJson()
-	return &Person{
-		_path: r._path,
-		_json: r._json,
-	}
-}
-
-func (r *OneOfData) AsVehicle() *Vehicle {
-	r.ensureJson()
-	return &Vehicle{
-		_path: r._path,
-		_json: r._json,
-	}
-}
-
-type OneOfOneOfRootObj struct {
-	_path string
-	_json *[]byte
 }
 
 func (r OneOfOneOfRootObj) MarshalJSON() ([]byte, error) {
@@ -740,7 +776,8 @@ func (r *OneOfOneOfRootObj) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = OneOfOneOfRootObj{_json: &bcopy}
 	return nil
@@ -784,7 +821,36 @@ func (r OneOfOneOfRootObj) Delete() error {
 	return nil
 }
 
-func (r OneOfOneOfRootObj) Set(v OneOfOneOfRootObj) error {
+type Person struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *Person) GetFirstName() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "firstName"),
+		_json: r._json,
+	}
+}
+
+func (r *Person) GetLastName() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "lastName"),
+		_json: r._json,
+	}
+}
+
+func (r *Person) GetSport() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "sport"),
+		_json: r._json,
+	}
+}
+
+func (r Person) Set(v Person) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -795,27 +861,6 @@ func (r OneOfOneOfRootObj) Set(v OneOfOneOfRootObj) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *OneOfOneOfRootObj) AsPerson() *Person {
-	r.ensureJson()
-	return &Person{
-		_path: r._path,
-		_json: r._json,
-	}
-}
-
-func (r *OneOfOneOfRootObj) AsVehicle() *Vehicle {
-	r.ensureJson()
-	return &Vehicle{
-		_path: r._path,
-		_json: r._json,
-	}
-}
-
-type Person struct {
-	_path string
-	_json *[]byte
 }
 
 func (r Person) MarshalJSON() ([]byte, error) {
@@ -831,7 +876,8 @@ func (r *Person) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = Person{_json: &bcopy}
 	return nil
@@ -875,7 +921,28 @@ func (r Person) Delete() error {
 	return nil
 }
 
-func (r Person) Set(v Person) error {
+type ShippingAddress struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *ShippingAddress) GetCity() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "city"),
+		_json: r._json,
+	}
+}
+
+func (r *ShippingAddress) GetType() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "type"),
+		_json: r._json,
+	}
+}
+
+func (r ShippingAddress) Set(v ShippingAddress) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -886,35 +953,6 @@ func (r Person) Set(v Person) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *Person) GetFirstName() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "firstName"),
-		_json: r._json,
-	}
-}
-
-func (r *Person) GetLastName() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "lastName"),
-		_json: r._json,
-	}
-}
-
-func (r *Person) GetSport() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "sport"),
-		_json: r._json,
-	}
-}
-
-type ShippingAddress struct {
-	_path string
-	_json *[]byte
 }
 
 func (r ShippingAddress) MarshalJSON() ([]byte, error) {
@@ -930,7 +968,8 @@ func (r *ShippingAddress) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = ShippingAddress{_json: &bcopy}
 	return nil
@@ -974,38 +1013,34 @@ func (r ShippingAddress) Delete() error {
 	return nil
 }
 
-func (r ShippingAddress) Set(v ShippingAddress) error {
+type String struct {
+	_path string
+	_json *[]byte
+}
+
+func (r String) Value() string {
+	res := r.result()
+	var v string
+	_ = json.Unmarshal([]byte(res.Raw), &v)
+	return v
+}
+
+func (r *String) Set(v string) error {
+	r.ensureJson()
 	if r._path == "" {
-		r.setJson(v.json())
+		b, err := json.Marshal(v)
+		if err != nil {
+			return err
+		}
+		r.setJson(b)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+	res, err := sjson.SetBytes(r.json(), r.path(), v)
 	if err != nil {
 		return err
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *ShippingAddress) GetCity() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "city"),
-		_json: r._json,
-	}
-}
-
-func (r *ShippingAddress) GetType() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "type"),
-		_json: r._json,
-	}
-}
-
-type String struct {
-	_path string
-	_json *[]byte
 }
 
 func (r String) MarshalJSON() ([]byte, error) {
@@ -1021,7 +1056,8 @@ func (r *String) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = String{_json: &bcopy}
 	return nil
@@ -1065,34 +1101,38 @@ func (r String) Delete() error {
 	return nil
 }
 
-func (r String) Value() string {
-	res := r.result()
-	var v string
-	_ = json.Unmarshal([]byte(res.Raw), &v)
-	return v
+type Vegetables struct {
+	_path string
+	_json *[]byte
 }
 
-func (r *String) Set(v string) error {
+func (r *Vegetables) At(i int) *Vegetables {
 	r.ensureJson()
+	return &Vegetables{
+		_path: pathJoin(r._path, fmt.Sprint(i)),
+		_json: r._json,
+	}
+}
+
+func (r Vegetables) Len() int {
+	res := r.result()
+	if !res.IsArray() {
+		return 0
+	}
+	return int(res.Get("#").Value().(float64))
+}
+
+func (r Vegetables) Set(v Vegetables) error {
 	if r._path == "" {
-		b, err := json.Marshal(v)
-		if err != nil {
-			return err
-		}
-		r.setJson(b)
+		r.setJson(v.json())
 		return nil
 	}
-	res, err := sjson.SetBytes(r.json(), r.path(), v)
+	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
 	if err != nil {
 		return err
 	}
 	r.setJson(res)
 	return nil
-}
-
-type Vegetables struct {
-	_path string
-	_json *[]byte
 }
 
 func (r Vegetables) MarshalJSON() ([]byte, error) {
@@ -1108,7 +1148,8 @@ func (r *Vegetables) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = Vegetables{_json: &bcopy}
 	return nil
@@ -1152,7 +1193,28 @@ func (r Vegetables) Delete() error {
 	return nil
 }
 
-func (r Vegetables) Set(v Vegetables) error {
+type Vehicle struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *Vehicle) GetBrand() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "brand"),
+		_json: r._json,
+	}
+}
+
+func (r *Vehicle) GetPrice() *Int64 {
+	r.ensureJson()
+	return &Int64{
+		_path: pathJoin(r._path, "price"),
+		_json: r._json,
+	}
+}
+
+func (r Vehicle) Set(v Vehicle) error {
 	if r._path == "" {
 		r.setJson(v.json())
 		return nil
@@ -1163,27 +1225,6 @@ func (r Vegetables) Set(v Vegetables) error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r *Vegetables) At(i int) *Vegetables {
-	r.ensureJson()
-	return &Vegetables{
-		_path: pathJoin(r._path, fmt.Sprint(i)),
-		_json: r._json,
-	}
-}
-
-func (r Vegetables) Len() int {
-	res := r.result()
-	if !res.IsArray() {
-		return 0
-	}
-	return int(res.Get("#").Value().(float64))
-}
-
-type Vehicle struct {
-	_path string
-	_json *[]byte
 }
 
 func (r Vehicle) MarshalJSON() ([]byte, error) {
@@ -1199,7 +1240,8 @@ func (r *Vehicle) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := slices.Clone(b)
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
 
 	*r = Vehicle{_json: &bcopy}
 	return nil
@@ -1241,33 +1283,4 @@ func (r Vehicle) Delete() error {
 	}
 	r.setJson(res)
 	return nil
-}
-
-func (r Vehicle) Set(v Vehicle) error {
-	if r._path == "" {
-		r.setJson(v.json())
-		return nil
-	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
-func (r *Vehicle) GetBrand() *String {
-	r.ensureJson()
-	return &String{
-		_path: pathJoin(r._path, "brand"),
-		_json: r._json,
-	}
-}
-
-func (r *Vehicle) GetPrice() *Int64 {
-	r.ensureJson()
-	return &Int64{
-		_path: pathJoin(r._path, "price"),
-		_json: r._json,
-	}
 }

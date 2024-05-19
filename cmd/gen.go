@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/raphaelvigee/gensonschema/gen"
 	"github.com/santhosh-tekuri/jsonschema/v5"
-	"go/format"
 	"golang.org/x/tools/imports"
 	"log"
 	"os"
@@ -70,13 +69,6 @@ func entrypoint() error {
 	if err != nil {
 		fmt.Println(err)
 		formatted = buf.Bytes()
-	}
-
-	b, err := format.Source(formatted)
-	if err != nil {
-		fmt.Println(err)
-	} else {
-		formatted = b
 	}
 
 	err = os.MkdirAll(filepath.Dir(config.Output.File), os.ModePerm)

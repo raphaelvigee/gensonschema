@@ -75,7 +75,7 @@ func TestSetOneOfRoot(t *testing.T) {
 	err = vehicle.GetBrand().Set("Mercedes")
 	require.NoError(t, err)
 
-	err = obj.AsVehicle().Set(vehicle)
+	err = obj.AsVehicle().Set(&vehicle)
 	require.NoError(t, err)
 
 	actual, err := json.Marshal(obj)
@@ -93,7 +93,7 @@ func TestSetOneOf(t *testing.T) {
 	err = vehicle.GetBrand().Set("Mercedes")
 	require.NoError(t, err)
 
-	err = obj.GetData().AsVehicle().Set(vehicle)
+	err = obj.GetData().AsVehicle().Set(&vehicle)
 	require.NoError(t, err)
 
 	actual, err := json.Marshal(obj)
@@ -124,10 +124,20 @@ func TestSetAllOf(t *testing.T) {
 
 	assert.JSONEq(t, `{"shipping_address": {"city":"Paris", "type":"business"}}`, string(actual))
 
-	actual, err = json.Marshal(obj.GetShipping_address())
+	shipAddress := obj.GetShipping_address()
+
+	actual, err = json.Marshal(shipAddress)
 	require.NoError(t, err)
 
 	assert.JSONEq(t, `{"city":"Paris", "type":"business"}`, string(actual))
+
+	err = shipAddress.Set(shipAddress)
+	require.NoError(t, err)
+
+	actual, err = json.Marshal(obj)
+	require.NoError(t, err)
+
+	assert.JSONEq(t, `{"shipping_address": {"city":"Paris", "type":"business"}}`, string(actual))
 }
 
 func TestAllOfOneOf(t *testing.T) {

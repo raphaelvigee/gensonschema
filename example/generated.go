@@ -39,12 +39,25 @@ func (r *AllOf) GetShipping_address() *AllofShipping_address {
 	}
 }
 
-func (r AllOf) Set(v AllOf) error {
+func (r AllOf) Set(v *AllOf) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -52,13 +65,19 @@ func (r AllOf) Set(v AllOf) error {
 	return nil
 }
 
-func (r AllOf) MarshalJSON() ([]byte, error) {
+func (r AllOf) mergeSet() bool {
+	return false
+}
+func (r AllOf) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllOf) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -136,12 +155,25 @@ func (r *AllOfOneOf) GetData() *AllofoneofData {
 	}
 }
 
-func (r AllOfOneOf) Set(v AllOfOneOf) error {
+func (r AllOfOneOf) Set(v *AllOfOneOf) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -149,13 +181,19 @@ func (r AllOfOneOf) Set(v AllOfOneOf) error {
 	return nil
 }
 
-func (r AllOfOneOf) MarshalJSON() ([]byte, error) {
+func (r AllOfOneOf) mergeSet() bool {
+	return false
+}
+func (r AllOfOneOf) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllOfOneOf) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllOfOneOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -233,12 +271,25 @@ func (r *AllofDefinitionsAddress) GetCity() *String {
 	}
 }
 
-func (r AllofDefinitionsAddress) Set(v AllofDefinitionsAddress) error {
+func (r AllofDefinitionsAddress) Set(v *AllofDefinitionsAddress) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -246,13 +297,19 @@ func (r AllofDefinitionsAddress) Set(v AllofDefinitionsAddress) error {
 	return nil
 }
 
-func (r AllofDefinitionsAddress) MarshalJSON() ([]byte, error) {
+func (r AllofDefinitionsAddress) mergeSet() bool {
+	return false
+}
+func (r AllofDefinitionsAddress) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofDefinitionsAddress) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofDefinitionsAddress) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -338,12 +395,25 @@ func (r *AllofShipping_address) GetType() *String {
 	}
 }
 
-func (r AllofShipping_address) Set(v AllofShipping_address) error {
+func (r AllofShipping_address) Set(v *AllofShipping_address) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -351,13 +421,19 @@ func (r AllofShipping_address) Set(v AllofShipping_address) error {
 	return nil
 }
 
-func (r AllofShipping_address) MarshalJSON() ([]byte, error) {
+func (r AllofShipping_address) mergeSet() bool {
+	return true
+}
+func (r AllofShipping_address) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofShipping_address) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofShipping_address) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -483,12 +559,25 @@ func (r *AllofoneofData) GetB() *String {
 	}
 }
 
-func (r AllofoneofData) Set(v AllofoneofData) error {
+func (r AllofoneofData) Set(v *AllofoneofData) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -496,13 +585,19 @@ func (r AllofoneofData) Set(v AllofoneofData) error {
 	return nil
 }
 
-func (r AllofoneofData) MarshalJSON() ([]byte, error) {
+func (r AllofoneofData) mergeSet() bool {
+	return true
+}
+func (r AllofoneofData) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofoneofData) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofoneofData) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -580,12 +675,25 @@ func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
 	}
 }
 
-func (r AllofoneofDataAllOf0OneOf0) Set(v AllofoneofDataAllOf0OneOf0) error {
+func (r AllofoneofDataAllOf0OneOf0) Set(v *AllofoneofDataAllOf0OneOf0) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -593,13 +701,19 @@ func (r AllofoneofDataAllOf0OneOf0) Set(v AllofoneofDataAllOf0OneOf0) error {
 	return nil
 }
 
-func (r AllofoneofDataAllOf0OneOf0) MarshalJSON() ([]byte, error) {
+func (r AllofoneofDataAllOf0OneOf0) mergeSet() bool {
+	return false
+}
+func (r AllofoneofDataAllOf0OneOf0) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofoneofDataAllOf0OneOf0) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofoneofDataAllOf0OneOf0) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -677,12 +791,25 @@ func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
 	}
 }
 
-func (r AllofoneofDataAllOf0OneOf1) Set(v AllofoneofDataAllOf0OneOf1) error {
+func (r AllofoneofDataAllOf0OneOf1) Set(v *AllofoneofDataAllOf0OneOf1) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -690,13 +817,19 @@ func (r AllofoneofDataAllOf0OneOf1) Set(v AllofoneofDataAllOf0OneOf1) error {
 	return nil
 }
 
-func (r AllofoneofDataAllOf0OneOf1) MarshalJSON() ([]byte, error) {
+func (r AllofoneofDataAllOf0OneOf1) mergeSet() bool {
+	return false
+}
+func (r AllofoneofDataAllOf0OneOf1) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofoneofDataAllOf0OneOf1) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofoneofDataAllOf0OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -774,12 +907,25 @@ func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
 	}
 }
 
-func (r AllofoneofDataAllOf2OneOf0) Set(v AllofoneofDataAllOf2OneOf0) error {
+func (r AllofoneofDataAllOf2OneOf0) Set(v *AllofoneofDataAllOf2OneOf0) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -787,13 +933,19 @@ func (r AllofoneofDataAllOf2OneOf0) Set(v AllofoneofDataAllOf2OneOf0) error {
 	return nil
 }
 
-func (r AllofoneofDataAllOf2OneOf0) MarshalJSON() ([]byte, error) {
+func (r AllofoneofDataAllOf2OneOf0) mergeSet() bool {
+	return false
+}
+func (r AllofoneofDataAllOf2OneOf0) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofoneofDataAllOf2OneOf0) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofoneofDataAllOf2OneOf0) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -871,12 +1023,25 @@ func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
 	}
 }
 
-func (r AllofoneofDataAllOf2OneOf1) Set(v AllofoneofDataAllOf2OneOf1) error {
+func (r AllofoneofDataAllOf2OneOf1) Set(v *AllofoneofDataAllOf2OneOf1) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -884,13 +1049,19 @@ func (r AllofoneofDataAllOf2OneOf1) Set(v AllofoneofDataAllOf2OneOf1) error {
 	return nil
 }
 
-func (r AllofoneofDataAllOf2OneOf1) MarshalJSON() ([]byte, error) {
+func (r AllofoneofDataAllOf2OneOf1) mergeSet() bool {
+	return false
+}
+func (r AllofoneofDataAllOf2OneOf1) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofoneofDataAllOf2OneOf1) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofoneofDataAllOf2OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -968,12 +1139,25 @@ func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
 	}
 }
 
-func (r AllofoneofDataAllOf3OneOf1) Set(v AllofoneofDataAllOf3OneOf1) error {
+func (r AllofoneofDataAllOf3OneOf1) Set(v *AllofoneofDataAllOf3OneOf1) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -981,13 +1165,19 @@ func (r AllofoneofDataAllOf3OneOf1) Set(v AllofoneofDataAllOf3OneOf1) error {
 	return nil
 }
 
-func (r AllofoneofDataAllOf3OneOf1) MarshalJSON() ([]byte, error) {
+func (r AllofoneofDataAllOf3OneOf1) mergeSet() bool {
+	return false
+}
+func (r AllofoneofDataAllOf3OneOf1) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r AllofoneofDataAllOf3OneOf1) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *AllofoneofDataAllOf3OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1073,12 +1263,25 @@ func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
 	}
 }
 
-func (r ArraysSchemaArraysSchema) Set(v ArraysSchemaArraysSchema) error {
+func (r ArraysSchemaArraysSchema) Set(v *ArraysSchemaArraysSchema) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1086,13 +1289,19 @@ func (r ArraysSchemaArraysSchema) Set(v ArraysSchemaArraysSchema) error {
 	return nil
 }
 
-func (r ArraysSchemaArraysSchema) MarshalJSON() ([]byte, error) {
+func (r ArraysSchemaArraysSchema) mergeSet() bool {
+	return false
+}
+func (r ArraysSchemaArraysSchema) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r ArraysSchemaArraysSchema) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *ArraysSchemaArraysSchema) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1178,12 +1387,25 @@ func (r ArraysSchemaFruits) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r ArraysSchemaFruits) Set(v ArraysSchemaFruits) error {
+func (r ArraysSchemaFruits) Set(v *ArraysSchemaFruits) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1191,13 +1413,19 @@ func (r ArraysSchemaFruits) Set(v ArraysSchemaFruits) error {
 	return nil
 }
 
-func (r ArraysSchemaFruits) MarshalJSON() ([]byte, error) {
+func (r ArraysSchemaFruits) mergeSet() bool {
+	return false
+}
+func (r ArraysSchemaFruits) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r ArraysSchemaFruits) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *ArraysSchemaFruits) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1283,12 +1511,25 @@ func (r ArraysSchemaVegetables) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r ArraysSchemaVegetables) Set(v ArraysSchemaVegetables) error {
+func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1296,13 +1537,19 @@ func (r ArraysSchemaVegetables) Set(v ArraysSchemaVegetables) error {
 	return nil
 }
 
-func (r ArraysSchemaVegetables) MarshalJSON() ([]byte, error) {
+func (r ArraysSchemaVegetables) mergeSet() bool {
+	return false
+}
+func (r ArraysSchemaVegetables) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r ArraysSchemaVegetables) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *ArraysSchemaVegetables) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1394,13 +1641,19 @@ func (r *Bool) Set(v bool) error {
 	return nil
 }
 
-func (r Bool) MarshalJSON() ([]byte, error) {
+func (r Bool) mergeSet() bool {
+	return false
+}
+func (r Bool) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r Bool) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *Bool) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1478,12 +1731,25 @@ func (r *DNestedTitle1) GetD1() *String {
 	}
 }
 
-func (r DNestedTitle1) Set(v DNestedTitle1) error {
+func (r DNestedTitle1) Set(v *DNestedTitle1) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1491,13 +1757,19 @@ func (r DNestedTitle1) Set(v DNestedTitle1) error {
 	return nil
 }
 
-func (r DNestedTitle1) MarshalJSON() ([]byte, error) {
+func (r DNestedTitle1) mergeSet() bool {
+	return false
+}
+func (r DNestedTitle1) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r DNestedTitle1) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *DNestedTitle1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1589,13 +1861,19 @@ func (r *Int64) Set(v int64) error {
 	return nil
 }
 
-func (r Int64) MarshalJSON() ([]byte, error) {
+func (r Int64) mergeSet() bool {
+	return false
+}
+func (r Int64) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r Int64) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *Int64) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1673,12 +1951,25 @@ func (r *OneOf) GetData() *OneofData {
 	}
 }
 
-func (r OneOf) Set(v OneOf) error {
+func (r OneOf) Set(v *OneOf) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1686,13 +1977,19 @@ func (r OneOf) Set(v OneOf) error {
 	return nil
 }
 
-func (r OneOf) MarshalJSON() ([]byte, error) {
+func (r OneOf) mergeSet() bool {
+	return false
+}
+func (r OneOf) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r OneOf) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *OneOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1778,12 +2075,25 @@ func (r *OneOfRootObj) AsVehicle() *Vehicle {
 	}
 }
 
-func (r OneOfRootObj) Set(v OneOfRootObj) error {
+func (r OneOfRootObj) Set(v *OneOfRootObj) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1791,13 +2101,19 @@ func (r OneOfRootObj) Set(v OneOfRootObj) error {
 	return nil
 }
 
-func (r OneOfRootObj) MarshalJSON() ([]byte, error) {
+func (r OneOfRootObj) mergeSet() bool {
+	return false
+}
+func (r OneOfRootObj) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r OneOfRootObj) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *OneOfRootObj) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1883,12 +2199,25 @@ func (r *OneofData) AsVehicle() *Vehicle {
 	}
 }
 
-func (r OneofData) Set(v OneofData) error {
+func (r OneofData) Set(v *OneofData) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -1896,13 +2225,19 @@ func (r OneofData) Set(v OneofData) error {
 	return nil
 }
 
-func (r OneofData) MarshalJSON() ([]byte, error) {
+func (r OneofData) mergeSet() bool {
+	return false
+}
+func (r OneofData) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r OneofData) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *OneofData) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1996,12 +2331,25 @@ func (r *Person) GetSport() *String {
 	}
 }
 
-func (r Person) Set(v Person) error {
+func (r Person) Set(v *Person) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -2009,13 +2357,19 @@ func (r Person) Set(v Person) error {
 	return nil
 }
 
-func (r Person) MarshalJSON() ([]byte, error) {
+func (r Person) mergeSet() bool {
+	return false
+}
+func (r Person) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r Person) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *Person) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2107,13 +2461,19 @@ func (r *String) Set(v string) error {
 	return nil
 }
 
-func (r String) MarshalJSON() ([]byte, error) {
+func (r String) mergeSet() bool {
+	return false
+}
+func (r String) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r String) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *String) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2199,12 +2559,25 @@ func (r *Vehicle) GetPrice() *Int64 {
 	}
 }
 
-func (r Vehicle) Set(v Vehicle) error {
+func (r Vehicle) Set(v *Vehicle) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
 	if r._path == "" {
-		r.setJson(v.json())
+		r.setJson(incoming)
 		return nil
 	}
-	res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -2212,13 +2585,19 @@ func (r Vehicle) Set(v Vehicle) error {
 	return nil
 }
 
-func (r Vehicle) MarshalJSON() ([]byte, error) {
+func (r Vehicle) mergeSet() bool {
+	return false
+}
+func (r Vehicle) currentJson() []byte {
 	if r._path == "" {
-		return r.json(), nil
+		return r.json()
 	}
 
 	res := r.result()
-	return []byte(res.Raw), nil
+	return []byte(res.Raw)
+}
+func (r Vehicle) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
 }
 func (r *Vehicle) UnmarshalJSON(b []byte) error {
 	if r._json != nil {

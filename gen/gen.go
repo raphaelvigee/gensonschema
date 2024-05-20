@@ -31,6 +31,10 @@ var wellKnownTypes = map[string]string{
 }
 
 func (s *structType) MakeStore(typ string) {
+	s.MakeStoreWith(typ, false)
+}
+
+func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 	s.AddField(StructField{
 		Name: "_path",
 		Type: "string",
@@ -41,13 +45,19 @@ func (s *structType) MakeStore(typ string) {
 	})
 
 	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r %[1]v) MarshalJSON() ([]byte, error) {
+	func (r %[1]v) mergeSet() bool {
+		return %[2]v
+	}
+	func (r %[1]v) currentJson() []byte {
 		if r._path == "" {
-			return r.json(), nil
+			return r.json()
 		}
 
 		res := r.result()
-		return []byte(res.Raw), nil
+		return []byte(res.Raw)
+	}
+	func (r %[1]v) MarshalJSON() ([]byte, error) {
+		return r.currentJson(), nil
 	}
 	func (r *%[1]v) UnmarshalJSON(b []byte) error {
 		if r._json != nil {
@@ -111,7 +121,7 @@ func (s *structType) MakeStore(typ string) {
 		r.setJson(res)
 		return nil
 	}
-	`, s.name))
+	`, s.name, mergeSet))
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
@@ -149,12 +159,25 @@ func (s *structType) MakeStore(typ string) {
 		`, s.name, typ))
 	} else {
 		s.methods = append(s.methods, fmt.Sprintf(`
-		func (r %v) Set(v %v) error {
+		func (r %v) Set(v *%v) error {
+			incoming := v.currentJson()
+
+			if r.mergeSet() {
+				param := []byte{'['}
+				param = append(param, r.currentJson()...)
+				param = append(param, ',')
+				param = append(param, incoming...)
+				param = append(param, ']')
+	
+				incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+			}
+
 			if r._path == "" {
-				r.setJson(v.json())
+				r.setJson(incoming)
 				return nil	
 			}
-			res, err := sjson.SetRawBytes(r.json(), r.path(), v.json())
+
+			res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
 			if err != nil {
 				return err
 			}
@@ -390,12 +413,12 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 		return g.genTypeForPrimitive(sch)
 	}
 
-	return g.buildTypeFor(name, []*jsonschema.Schema{sch})
+	return g.buildTypeFor(name, []*jsonschema.Schema{sch}, false)
 }
 
-func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema) (string, string, error) {
+func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSet bool) (string, string, error) {
 	storeType := &structType{name: name}
-	storeType.MakeStore("")
+	storeType.MakeStoreWith("", mergeSet)
 
 	for i, sch := range schs {
 		if sch.OneOf != nil {
@@ -596,7 +619,7 @@ func (g *generator) namedAllOfTypeFor(sch *jsonschema.Schema) (string, string, e
 
 	name := g.schemaToTypeName(sch)
 
-	return g.buildTypeFor(name, schs)
+	return g.buildTypeFor(name, schs, true)
 }
 
 func Gen(config Config) error {

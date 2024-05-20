@@ -199,7 +199,7 @@ func (s *structType) AddAsGetter(name, styp string) {
 	if name == "" {
 		name = styp
 	}
-	name = strings.Title(name)
+	name = strings.ToUpper(name[:1]) + name[1:]
 
 	if s.asGetters == nil {
 		s.asGetters = map[string]struct{}{}
@@ -299,13 +299,13 @@ func (g *generator) genTypeForPrimitive(sch *jsonschema.Schema) (string, string,
 		jdefault = `""`
 	case "integer":
 		goType = "int64"
-		jdefault = `0`
+		jdefault = "0"
 	case "number":
 		goType = "float64"
-		jdefault = `0.0`
+		jdefault = "0.0"
 	case "boolean":
 		goType = "bool"
-		jdefault = `false`
+		jdefault = "false"
 	default:
 		return "", "", fmt.Errorf("unsupported type %s", sch.Types[0])
 	}
@@ -324,19 +324,20 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 	if name == "" {
 		name = g.schemaToTypeName(sch)
 	}
+	if sch.Title != "" {
+		name = g.titleToName(sch.Title)
+	}
 
 	if sch.Ref != nil {
 		return g.genTypeFor(name, sch.Ref)
 	}
 
 	if sch.OneOf != nil {
-		name := "OneOf" + name
-		return g.asTypeFor(name, sch.OneOf)
+		return g.asTypeFor(name, "OneOf", sch.OneOf)
 	}
 
 	if sch.AnyOf != nil {
-		name := "AnyOf" + name
-		return g.asTypeFor(name, sch.AnyOf)
+		return g.asTypeFor(name, "AnyOf", sch.AnyOf)
 	}
 
 	if sch.AllOf != nil {
@@ -380,10 +381,10 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 		return g.genTypeForPrimitive(sch)
 	}
 
-	return g.buildTypeFor(sch.Location, name, []*jsonschema.Schema{sch})
+	return g.buildTypeFor(name, []*jsonschema.Schema{sch})
 }
 
-func (g *generator) buildTypeFor(location, name string, schs []*jsonschema.Schema) (string, string, error) {
+func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema) (string, string, error) {
 	allObjects := true
 	for _, sch := range schs {
 		if len(sch.Types) < 1 || sch.Types[0] != "object" {
@@ -398,7 +399,31 @@ func (g *generator) buildTypeFor(location, name string, schs []*jsonschema.Schem
 	storeType := &structType{name: name}
 	storeType.MakeStore("", jsonDefault)
 
-	for _, sch := range schs {
+	for i, sch := range schs {
+		if sch.OneOf != nil {
+			prefix := g.titleToName(sch.Title)
+			if prefix == "" {
+				prefix = fmt.Sprintf("AllOf%vOneOf", i)
+			}
+			err := g.asTypeForInto(storeType, prefix, sch.OneOf)
+			if err != nil {
+				return "", "", err
+			}
+			continue
+		}
+
+		if sch.AnyOf != nil {
+			prefix := g.titleToName(sch.Title)
+			if prefix == "" {
+				prefix = fmt.Sprintf("AllOf%vAnyOf", i)
+			}
+			err := g.asTypeForInto(storeType, prefix, sch.AnyOf)
+			if err != nil {
+				return "", "", err
+			}
+			continue
+		}
+
 		for propName, fieldSchema := range sch.Properties {
 			if g.config.ShouldGenerate != nil {
 				if !g.config.ShouldGenerate(fieldSchema) {
@@ -415,7 +440,7 @@ func (g *generator) buildTypeFor(location, name string, schs []*jsonschema.Schem
 				continue
 			}
 
-			name := g.pathToFieldName(propName)
+			name := g.propertyToFieldName(propName)
 
 			storeType.AddGetter(name, propName, styp)
 		}
@@ -433,8 +458,9 @@ func (g *generator) registerStruct(t *structType) string {
 	return t.name
 }
 
-func (g *generator) pathToFieldName(s string) string {
-	return strings.Title(s)
+func (g *generator) propertyToFieldName(s string) string {
+	s = strings.ToUpper(s[:1]) + s[1:]
+	return s
 }
 
 func (g *generator) schemaToTypeName(sch *jsonschema.Schema) string {
@@ -450,19 +476,24 @@ func (g *generator) schemaToTypeName(sch *jsonschema.Schema) string {
 }
 
 func (g *generator) locationToTypeName(s string) string {
-	_, name, _ := strings.Cut(s, "#/")
+	url, name, _ := strings.Cut(s, "#/")
 	if name == "" {
 		s = strings.TrimSuffix(s, "#")
 		s = filepath.Base(s)
 		name = strings.ReplaceAll(s, filepath.Ext(s), "")
 	}
 
+	fileName := filepath.Base(url)
+	fileName = strings.TrimSuffix(fileName, filepath.Ext(fileName))
+
+	name = fileName + " " + name
+
 	var parts []string
 	for _, part := range reg.Split(name, -1) {
-		if part == "properties" || part == "items" {
+		if part == "" || part == "properties" || part == "items" {
 			continue
 		}
-		parts = append(parts, strings.Title(part))
+		parts = append(parts, strings.ToUpper(part[:1])+part[1:])
 	}
 	return g.sanitizeSymbol(strings.Join(parts, ""))
 }
@@ -477,12 +508,16 @@ func (g *generator) sanitizeSymbol(s string) string {
 	return s
 }
 
-var reg = regexp.MustCompile("[^a-zA-Z0-9]+")
+var reg = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
 func (g *generator) titleToName(s string) string {
+	if s == "" {
+		return ""
+	}
+
 	parts := reg.Split(s, -1)
 	for i, part := range parts {
-		parts[i] = strings.Title(part)
+		parts[i] = strings.ToUpper(part[:1]) + part[1:]
 	}
 	return g.sanitizeSymbol(strings.Join(parts, ""))
 }
@@ -491,25 +526,42 @@ func (g *generator) typeToName(s string) string {
 	return g.titleToName(s)
 }
 
-func (g *generator) asTypeFor(name string, schs []*jsonschema.Schema) (string, string, error) {
-	stype := &structType{name: name}
-	stype.MakeStore("", "")
+func (g *generator) compositeName(prefix string, i int, sch *jsonschema.Schema) string {
+	if sch.Title != "" {
+		return g.propertyToFieldName(sch.Title)
+	}
 
-	for _, sch := range schs {
-		chStype, chDtype, err := g.genTypeFor("", sch)
+	return fmt.Sprintf("%v%v", prefix, i)
+}
+
+func (g *generator) asTypeForInto(stype *structType, prefix string, schs []*jsonschema.Schema) error {
+	for i, sch := range schs {
+		chStype, _, err := g.genTypeFor("", sch)
 		if err != nil {
-			return "", "", err
+			return err
 		}
 
 		if chStype == "" {
 			continue
 		}
 
-		stype.AddAsGetter(chDtype, chStype)
+		fieldName := g.compositeName(prefix, i, sch)
+		stype.AddAsGetter(fieldName, chStype)
+	}
+
+	return nil
+}
+
+func (g *generator) asTypeFor(name, prefix string, schs []*jsonschema.Schema) (string, string, error) {
+	stype := &structType{name: name}
+	stype.MakeStore("", "")
+
+	err := g.asTypeForInto(stype, prefix, schs)
+	if err != nil {
+		return "", "", err
 	}
 
 	return g.registerStruct(stype), "", nil
-
 }
 
 func (g *generator) flattenAllOfs(sch *jsonschema.Schema) []*jsonschema.Schema {
@@ -531,7 +583,7 @@ func (g *generator) namedAllOfTypeFor(sch *jsonschema.Schema) (string, string, e
 
 	name := g.schemaToTypeName(sch)
 
-	return g.buildTypeFor(sch.Location, name, schs)
+	return g.buildTypeFor(name, schs)
 }
 
 func Gen(config Config) error {
@@ -552,8 +604,9 @@ func Gen(config Config) error {
 	g.imports["fmt"] = struct{}{}
 
 	w := writer{g.config.Out}
-	w.w.Write([]byte("// Code generated by github.com/raphaelvigee/gensonschema. DO NOT EDIT!\n"))
 	w.Package(g.config.PackageName)
+
+	w.w.Write([]byte("// Code generated by github.com/raphaelvigee/gensonschema. DO NOT EDIT!\n\n"))
 
 	for importStr := range g.imports {
 		w.Import("", importStr)

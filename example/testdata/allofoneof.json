@@ -1,0 +1,59 @@
+{
+  "title": "AllOfOneOf",
+  "type": "object",
+  "properties": {
+    "data": {
+      "allOf": [
+        {
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "a1": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "a2": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "b": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "title": "Named OneOf",
+          "oneOf": [
+            {
+              "type": "object",
+              "properties": {
+                "c1": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "c2": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

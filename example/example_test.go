@@ -47,7 +47,7 @@ func TestGetSetProperty(t *testing.T) {
 }
 
 func TestGetSetOneOf(t *testing.T) {
-	var obj gen.OneOfOneOfRootObj
+	var obj gen.OneOfRootObj
 	err := json.Unmarshal([]byte(`{"firstName": "Bob"}`), &obj)
 	require.NoError(t, err)
 
@@ -67,7 +67,7 @@ func TestGetSetOneOf(t *testing.T) {
 }
 
 func TestSetOneOfRoot(t *testing.T) {
-	var obj gen.OneOfOneOfRootObj
+	var obj gen.OneOfRootObj
 	err := json.Unmarshal([]byte(`{"firstName": "Bob"}`), &obj)
 	require.NoError(t, err)
 
@@ -123,4 +123,14 @@ func TestSetAllOf(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.JSONEq(t, `{"shipping_address": {"city":"Paris", "type":"business"}}`, string(actual))
+}
+
+func TestAllOfOneOf(t *testing.T) {
+	var obj gen.AllOfOneOf
+
+	_ = obj.GetData().GetB()
+	_ = obj.GetData().AsAllOf0OneOf0().GetA1()
+	_ = obj.GetData().AsAllOf0OneOf1().GetA2()
+	_ = obj.GetData().AsNamedOneOf0().GetC1()
+	_ = obj.GetData().AsNamedOneOf1().GetC2()
 }

@@ -537,7 +537,11 @@ func (g *generator) typeToName(s string) string {
 
 func (g *generator) compositeName(prefix string, i int, sch *jsonschema.Schema) string {
 	if sch.Title != "" {
-		return g.propertyToFieldName(sch.Title)
+		return g.titleToName(sch.Title)
+	}
+
+	if sch.Ref != nil {
+		return g.compositeName(prefix, i, sch.Ref)
 	}
 
 	return fmt.Sprintf("%v%v", prefix, i)

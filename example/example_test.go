@@ -138,4 +138,6 @@ func TestAllOfOneOf(t *testing.T) {
 	_ = obj.GetData().AsAllOf0OneOf1().GetA2()
 	_ = obj.GetData().AsNamedOneOf0().GetC1()
 	_ = obj.GetData().AsNamedOneOf1().GetC2()
+	_ = obj.GetData().AsDNestedTitle1().GetD1()
+	_ = obj.GetData().AsAllOf3OneOf1().GetD2()
 }

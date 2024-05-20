@@ -52,6 +52,27 @@
               }
             }
           ]
+        },
+        {
+          "oneOf": [
+            {
+              "title": "D Nested Title 1",
+              "type": "object",
+              "properties": {
+                "d1": {
+                  "type": "string"
+                }
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "d2": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
         }
       ]
     }

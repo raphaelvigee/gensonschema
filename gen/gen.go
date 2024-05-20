@@ -30,7 +30,7 @@ var wellKnownTypes = map[string]string{
 	"string":  "String()",
 }
 
-func (s *structType) MakeStore(typ, jsonDefault string) {
+func (s *structType) MakeStore(typ string) {
 	s.AddField(StructField{
 		Name: "_path",
 		Type: "string",
@@ -42,10 +42,23 @@ func (s *structType) MakeStore(typ, jsonDefault string) {
 
 	s.methods = append(s.methods, fmt.Sprintf(`
 	func (r %[1]v) MarshalJSON() ([]byte, error) {
-		return r.json(), nil
+		if r._path == "" {
+			return r.json(), nil
+		}
+
+		res := r.result()
+		return []byte(res.Raw), nil
 	}
 	func (r *%[1]v) UnmarshalJSON(b []byte) error {
 		if r._json != nil {
+			if r._path == "" {
+				bcopy := make([]byte, len(b))
+				copy(bcopy, b)
+
+				r.setJson(bcopy)
+				return nil
+			}
+
 			njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 			if err != nil {
 				return err
@@ -62,7 +75,7 @@ func (s *structType) MakeStore(typ, jsonDefault string) {
 	}
 	func (r %[1]v) json() []byte {
 		if r._json == nil {
-			return []byte(%[2]v)
+			return []byte("")
 		}
 		
 		return *r._json
@@ -98,7 +111,7 @@ func (s *structType) MakeStore(typ, jsonDefault string) {
 		r.setJson(res)
 		return nil
 	}
-	`, s.name, strconv.Quote(jsonDefault)))
+	`, s.name))
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
@@ -292,30 +305,26 @@ func (g *generator) gen() error {
 }
 
 func (g *generator) genTypeForPrimitive(sch *jsonschema.Schema) (string, string, error) {
-	goType, jdefault := "", ""
+	goType := ""
 	switch sch.Types[0] {
 	case "string":
 		goType = "string"
-		jdefault = `""`
 	case "integer":
 		goType = "int64"
-		jdefault = "0"
 	case "number":
 		goType = "float64"
-		jdefault = "0.0"
 	case "boolean":
 		goType = "bool"
-		jdefault = "false"
 	default:
 		return "", "", fmt.Errorf("unsupported type %s", sch.Types[0])
 	}
 
-	return g.genStoreForTypeName(goType, jdefault)
+	return g.genStoreForTypeName(goType)
 }
 
-func (g *generator) genStoreForTypeName(goType, jtype string) (string, string, error) {
+func (g *generator) genStoreForTypeName(goType string) (string, string, error) {
 	storeType := &structType{name: g.typeToName(goType)}
-	storeType.MakeStore(goType, jtype)
+	storeType.MakeStore(goType)
 
 	return g.registerStruct(storeType), goType, nil
 }
@@ -364,7 +373,7 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 		}
 
 		styp := &structType{name: name}
-		styp.MakeStore("", `[]`)
+		styp.MakeStore("")
 
 		styp.AddIndexGetter(itemStyp)
 
@@ -385,19 +394,8 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 }
 
 func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema) (string, string, error) {
-	allObjects := true
-	for _, sch := range schs {
-		if len(sch.Types) < 1 || sch.Types[0] != "object" {
-			allObjects = false
-			break
-		}
-	}
-	jsonDefault := ""
-	if allObjects {
-		jsonDefault = `{}`
-	}
 	storeType := &structType{name: name}
-	storeType.MakeStore("", jsonDefault)
+	storeType.MakeStore("")
 
 	for i, sch := range schs {
 		if sch.OneOf != nil {
@@ -554,7 +552,7 @@ func (g *generator) asTypeForInto(stype *structType, prefix string, schs []*json
 
 func (g *generator) asTypeFor(name, prefix string, schs []*jsonschema.Schema) (string, string, error) {
 	stype := &structType{name: name}
-	stype.MakeStore("", "")
+	stype.MakeStore("")
 
 	err := g.asTypeForInto(stype, prefix, schs)
 	if err != nil {

@@ -53,10 +53,23 @@ func (r AllOf) Set(v AllOf) error {
 }
 
 func (r AllOf) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -73,7 +86,7 @@ func (r *AllOf) UnmarshalJSON(b []byte) error {
 }
 func (r AllOf) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -137,10 +150,23 @@ func (r AllOfOneOf) Set(v AllOfOneOf) error {
 }
 
 func (r AllOfOneOf) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllOfOneOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -157,7 +183,7 @@ func (r *AllOfOneOf) UnmarshalJSON(b []byte) error {
 }
 func (r AllOfOneOf) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -221,10 +247,23 @@ func (r AllofDefinitionsAddress) Set(v AllofDefinitionsAddress) error {
 }
 
 func (r AllofDefinitionsAddress) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofDefinitionsAddress) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -241,7 +280,7 @@ func (r *AllofDefinitionsAddress) UnmarshalJSON(b []byte) error {
 }
 func (r AllofDefinitionsAddress) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -313,10 +352,23 @@ func (r AllofShipping_address) Set(v AllofShipping_address) error {
 }
 
 func (r AllofShipping_address) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofShipping_address) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -333,7 +385,7 @@ func (r *AllofShipping_address) UnmarshalJSON(b []byte) error {
 }
 func (r AllofShipping_address) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -429,10 +481,23 @@ func (r AllofoneofData) Set(v AllofoneofData) error {
 }
 
 func (r AllofoneofData) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofoneofData) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -513,10 +578,23 @@ func (r AllofoneofDataAllOf0OneOf0) Set(v AllofoneofDataAllOf0OneOf0) error {
 }
 
 func (r AllofoneofDataAllOf0OneOf0) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofoneofDataAllOf0OneOf0) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -533,7 +611,7 @@ func (r *AllofoneofDataAllOf0OneOf0) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf0OneOf0) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -597,10 +675,23 @@ func (r AllofoneofDataAllOf0OneOf1) Set(v AllofoneofDataAllOf0OneOf1) error {
 }
 
 func (r AllofoneofDataAllOf0OneOf1) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofoneofDataAllOf0OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -617,7 +708,7 @@ func (r *AllofoneofDataAllOf0OneOf1) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf0OneOf1) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -681,10 +772,23 @@ func (r AllofoneofDataAllOf2OneOf0) Set(v AllofoneofDataAllOf2OneOf0) error {
 }
 
 func (r AllofoneofDataAllOf2OneOf0) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofoneofDataAllOf2OneOf0) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -701,7 +805,7 @@ func (r *AllofoneofDataAllOf2OneOf0) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf2OneOf0) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -765,10 +869,23 @@ func (r AllofoneofDataAllOf2OneOf1) Set(v AllofoneofDataAllOf2OneOf1) error {
 }
 
 func (r AllofoneofDataAllOf2OneOf1) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *AllofoneofDataAllOf2OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -785,7 +902,7 @@ func (r *AllofoneofDataAllOf2OneOf1) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf2OneOf1) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -857,10 +974,23 @@ func (r ArraysSchemaArraysSchema) Set(v ArraysSchemaArraysSchema) error {
 }
 
 func (r ArraysSchemaArraysSchema) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *ArraysSchemaArraysSchema) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -877,7 +1007,7 @@ func (r *ArraysSchemaArraysSchema) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaArraysSchema) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -949,10 +1079,23 @@ func (r ArraysSchemaFruits) Set(v ArraysSchemaFruits) error {
 }
 
 func (r ArraysSchemaFruits) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *ArraysSchemaFruits) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -969,7 +1112,7 @@ func (r *ArraysSchemaFruits) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaFruits) json() []byte {
 	if r._json == nil {
-		return []byte("[]")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1041,10 +1184,23 @@ func (r ArraysSchemaVegetables) Set(v ArraysSchemaVegetables) error {
 }
 
 func (r ArraysSchemaVegetables) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *ArraysSchemaVegetables) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1061,7 +1217,7 @@ func (r *ArraysSchemaVegetables) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaVegetables) json() []byte {
 	if r._json == nil {
-		return []byte("[]")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1126,10 +1282,23 @@ func (r *Bool) Set(v bool) error {
 }
 
 func (r Bool) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *Bool) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1146,7 +1315,7 @@ func (r *Bool) UnmarshalJSON(b []byte) error {
 }
 func (r Bool) json() []byte {
 	if r._json == nil {
-		return []byte("false")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1211,10 +1380,23 @@ func (r *Int64) Set(v int64) error {
 }
 
 func (r Int64) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *Int64) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1231,7 +1413,7 @@ func (r *Int64) UnmarshalJSON(b []byte) error {
 }
 func (r Int64) json() []byte {
 	if r._json == nil {
-		return []byte("0")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1295,10 +1477,23 @@ func (r OneOf) Set(v OneOf) error {
 }
 
 func (r OneOf) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *OneOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1315,7 +1510,7 @@ func (r *OneOf) UnmarshalJSON(b []byte) error {
 }
 func (r OneOf) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1387,10 +1582,23 @@ func (r OneOfRootObj) Set(v OneOfRootObj) error {
 }
 
 func (r OneOfRootObj) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *OneOfRootObj) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1479,10 +1687,23 @@ func (r OneofData) Set(v OneofData) error {
 }
 
 func (r OneofData) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *OneofData) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1579,10 +1800,23 @@ func (r Person) Set(v Person) error {
 }
 
 func (r Person) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *Person) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1599,7 +1833,7 @@ func (r *Person) UnmarshalJSON(b []byte) error {
 }
 func (r Person) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1664,10 +1898,23 @@ func (r *String) Set(v string) error {
 }
 
 func (r String) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *String) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1684,7 +1931,7 @@ func (r *String) UnmarshalJSON(b []byte) error {
 }
 func (r String) json() []byte {
 	if r._json == nil {
-		return []byte("\"\"")
+		return []byte("")
 	}
 
 	return *r._json
@@ -1756,10 +2003,23 @@ func (r Vehicle) Set(v Vehicle) error {
 }
 
 func (r Vehicle) MarshalJSON() ([]byte, error) {
-	return r.json(), nil
+	if r._path == "" {
+		return r.json(), nil
+	}
+
+	res := r.result()
+	return []byte(res.Raw), nil
 }
 func (r *Vehicle) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
 		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
 		if err != nil {
 			return err
@@ -1776,7 +2036,7 @@ func (r *Vehicle) UnmarshalJSON(b []byte) error {
 }
 func (r Vehicle) json() []byte {
 	if r._json == nil {
-		return []byte("{}")
+		return []byte("")
 	}
 
 	return *r._json

@@ -123,6 +123,11 @@ func TestSetAllOf(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.JSONEq(t, `{"shipping_address": {"city":"Paris", "type":"business"}}`, string(actual))
+
+	actual, err = json.Marshal(obj.GetShipping_address())
+	require.NoError(t, err)
+
+	assert.JSONEq(t, `{"city":"Paris", "type":"business"}`, string(actual))
 }
 
 func TestAllOfOneOf(t *testing.T) {

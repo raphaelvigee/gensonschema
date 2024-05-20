@@ -212,7 +212,7 @@ func (s *structType) AddAsGetter(name, styp string) {
 	if name == "" {
 		name = styp
 	}
-	name = strings.ToUpper(name[:1]) + name[1:]
+	name = titleCase(name)
 
 	if s.asGetters == nil {
 		s.asGetters = map[string]struct{}{}
@@ -457,8 +457,7 @@ func (g *generator) registerStruct(t *structType) string {
 }
 
 func (g *generator) propertyToFieldName(s string) string {
-	s = strings.ToUpper(s[:1]) + s[1:]
-	return s
+	return titleCase(s)
 }
 
 func (g *generator) schemaToTypeName(sch *jsonschema.Schema) string {
@@ -491,7 +490,7 @@ func (g *generator) locationToTypeName(s string) string {
 		if part == "" || part == "properties" || part == "items" {
 			continue
 		}
-		parts = append(parts, strings.ToUpper(part[:1])+part[1:])
+		parts = append(parts, titleCase(part))
 	}
 	return g.sanitizeSymbol(strings.Join(parts, ""))
 }
@@ -508,6 +507,18 @@ func (g *generator) sanitizeSymbol(s string) string {
 
 var reg = regexp.MustCompile("[^a-zA-Z0-9_]+")
 
+func titleCase(s string) string {
+	if s == "" {
+		return ""
+	}
+
+	if len(s) == 1 {
+		return strings.ToUpper(s)
+	}
+
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
 func (g *generator) titleToName(s string) string {
 	if s == "" {
 		return ""
@@ -515,7 +526,7 @@ func (g *generator) titleToName(s string) string {
 
 	parts := reg.Split(s, -1)
 	for i, part := range parts {
-		parts[i] = strings.ToUpper(part[:1]) + part[1:]
+		parts[i] = titleCase(part)
 	}
 	return g.sanitizeSymbol(strings.Join(parts, ""))
 }

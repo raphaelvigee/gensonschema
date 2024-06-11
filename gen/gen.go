@@ -390,7 +390,7 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 			return "", "", fmt.Errorf("unsupported items type %T", sch.Types[0])
 		}
 
-		itemStyp, itemDtype, err := g.genTypeFor(name, itemSchema)
+		itemStyp, itemDtype, err := g.genTypeFor("", itemSchema)
 		if err != nil {
 			return "", "", err
 		}

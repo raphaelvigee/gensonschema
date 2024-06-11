@@ -151,3 +151,10 @@ func TestAllOfOneOf(t *testing.T) {
 	_ = obj.GetData().AsDNestedTitle1().GetD1()
 	_ = obj.GetData().AsAllOf3OneOf1().GetD2()
 }
+
+func TestIssue(t *testing.T) {
+	var obj gen.IssueIssue
+
+	_ = obj.GetTopfield1().At(0).GetField1()
+	_ = obj.GetTopfield1().At(0).GetField2()
+}

@@ -1366,6 +1366,130 @@ func (r ArraysSchemaArraysSchema) Delete() error {
 	return nil
 }
 
+type ArraysSchemaDefsVeggie struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *ArraysSchemaDefsVeggie) GetVeggieLike() *Bool {
+	r.ensureJson()
+	return &Bool{
+		_path: pathJoin(r._path, "veggieLike"),
+		_json: r._json,
+	}
+}
+
+func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "veggieName"),
+		_json: r._json,
+	}
+}
+
+func (r ArraysSchemaDefsVeggie) Set(v *ArraysSchemaDefsVeggie) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
+	if r._path == "" {
+		r.setJson(incoming)
+		return nil
+	}
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+func (r ArraysSchemaDefsVeggie) mergeSet() bool {
+	return false
+}
+func (r ArraysSchemaDefsVeggie) currentJson() []byte {
+	if r._path == "" {
+		return r.json()
+	}
+
+	res := r.result()
+	return []byte(res.Raw)
+}
+func (r ArraysSchemaDefsVeggie) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
+}
+func (r *ArraysSchemaDefsVeggie) UnmarshalJSON(b []byte) error {
+	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
+		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		if err != nil {
+			return err
+		}
+		r.setJson(njson)
+		return nil
+	}
+
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
+
+	*r = ArraysSchemaDefsVeggie{_json: &bcopy}
+	return nil
+}
+func (r ArraysSchemaDefsVeggie) json() []byte {
+	if r._json == nil {
+		return []byte("")
+	}
+
+	return *r._json
+}
+func (r ArraysSchemaDefsVeggie) path() string {
+	return r._path
+}
+func (r ArraysSchemaDefsVeggie) setJson(v []byte) {
+	*r._json = v
+}
+func (r *ArraysSchemaDefsVeggie) ensureJson() {
+	if r._json != nil {
+		return
+	}
+
+	b := r.json()
+	r._json = &b
+}
+func (r ArraysSchemaDefsVeggie) result() gjson.Result {
+	if r._path == "" {
+		return gjson.ParseBytes(r.json())
+	}
+	return gjson.GetBytes(r.json(), r.path())
+}
+func (r ArraysSchemaDefsVeggie) Exists() bool {
+	return r.result().Exists()
+}
+func (r ArraysSchemaDefsVeggie) Delete() error {
+	res, err := sjson.DeleteBytes(r.json(), r.path())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
 type ArraysSchemaFruits struct {
 	_path string
 	_json *[]byte
@@ -1495,9 +1619,9 @@ type ArraysSchemaVegetables struct {
 	_json *[]byte
 }
 
-func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaVegetables {
+func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
 	r.ensureJson()
-	return &ArraysSchemaVegetables{
+	return &ArraysSchemaDefsVeggie{
 		_path: pathJoin(r._path, fmt.Sprint(i)),
 		_json: r._json,
 	}
@@ -1930,6 +2054,370 @@ func (r Int64) Exists() bool {
 	return r.result().Exists()
 }
 func (r Int64) Delete() error {
+	res, err := sjson.DeleteBytes(r.json(), r.path())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+type IssueDefinitionsDef1 struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *IssueDefinitionsDef1) GetField1() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "field1"),
+		_json: r._json,
+	}
+}
+
+func (r *IssueDefinitionsDef1) GetField2() *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, "field2"),
+		_json: r._json,
+	}
+}
+
+func (r IssueDefinitionsDef1) Set(v *IssueDefinitionsDef1) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
+	if r._path == "" {
+		r.setJson(incoming)
+		return nil
+	}
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+func (r IssueDefinitionsDef1) mergeSet() bool {
+	return false
+}
+func (r IssueDefinitionsDef1) currentJson() []byte {
+	if r._path == "" {
+		return r.json()
+	}
+
+	res := r.result()
+	return []byte(res.Raw)
+}
+func (r IssueDefinitionsDef1) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
+}
+func (r *IssueDefinitionsDef1) UnmarshalJSON(b []byte) error {
+	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
+		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		if err != nil {
+			return err
+		}
+		r.setJson(njson)
+		return nil
+	}
+
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
+
+	*r = IssueDefinitionsDef1{_json: &bcopy}
+	return nil
+}
+func (r IssueDefinitionsDef1) json() []byte {
+	if r._json == nil {
+		return []byte("")
+	}
+
+	return *r._json
+}
+func (r IssueDefinitionsDef1) path() string {
+	return r._path
+}
+func (r IssueDefinitionsDef1) setJson(v []byte) {
+	*r._json = v
+}
+func (r *IssueDefinitionsDef1) ensureJson() {
+	if r._json != nil {
+		return
+	}
+
+	b := r.json()
+	r._json = &b
+}
+func (r IssueDefinitionsDef1) result() gjson.Result {
+	if r._path == "" {
+		return gjson.ParseBytes(r.json())
+	}
+	return gjson.GetBytes(r.json(), r.path())
+}
+func (r IssueDefinitionsDef1) Exists() bool {
+	return r.result().Exists()
+}
+func (r IssueDefinitionsDef1) Delete() error {
+	res, err := sjson.DeleteBytes(r.json(), r.path())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+type IssueIssue struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *IssueIssue) GetTopfield1() *IssueTopfield1 {
+	r.ensureJson()
+	return &IssueTopfield1{
+		_path: pathJoin(r._path, "topfield1"),
+		_json: r._json,
+	}
+}
+
+func (r IssueIssue) Set(v *IssueIssue) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
+	if r._path == "" {
+		r.setJson(incoming)
+		return nil
+	}
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+func (r IssueIssue) mergeSet() bool {
+	return false
+}
+func (r IssueIssue) currentJson() []byte {
+	if r._path == "" {
+		return r.json()
+	}
+
+	res := r.result()
+	return []byte(res.Raw)
+}
+func (r IssueIssue) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
+}
+func (r *IssueIssue) UnmarshalJSON(b []byte) error {
+	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
+		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		if err != nil {
+			return err
+		}
+		r.setJson(njson)
+		return nil
+	}
+
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
+
+	*r = IssueIssue{_json: &bcopy}
+	return nil
+}
+func (r IssueIssue) json() []byte {
+	if r._json == nil {
+		return []byte("")
+	}
+
+	return *r._json
+}
+func (r IssueIssue) path() string {
+	return r._path
+}
+func (r IssueIssue) setJson(v []byte) {
+	*r._json = v
+}
+func (r *IssueIssue) ensureJson() {
+	if r._json != nil {
+		return
+	}
+
+	b := r.json()
+	r._json = &b
+}
+func (r IssueIssue) result() gjson.Result {
+	if r._path == "" {
+		return gjson.ParseBytes(r.json())
+	}
+	return gjson.GetBytes(r.json(), r.path())
+}
+func (r IssueIssue) Exists() bool {
+	return r.result().Exists()
+}
+func (r IssueIssue) Delete() error {
+	res, err := sjson.DeleteBytes(r.json(), r.path())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+type IssueTopfield1 struct {
+	_path string
+	_json *[]byte
+}
+
+func (r *IssueTopfield1) At(i int) *IssueDefinitionsDef1 {
+	r.ensureJson()
+	return &IssueDefinitionsDef1{
+		_path: pathJoin(r._path, fmt.Sprint(i)),
+		_json: r._json,
+	}
+}
+
+func (r IssueTopfield1) Len() int {
+	res := r.result()
+	if !res.IsArray() {
+		return 0
+	}
+	return int(res.Get("#").Int())
+}
+
+func (r IssueTopfield1) Set(v *IssueTopfield1) error {
+	incoming := v.currentJson()
+
+	if r.mergeSet() {
+		param := []byte{'['}
+		param = append(param, r.currentJson()...)
+		param = append(param, ',')
+		param = append(param, incoming...)
+		param = append(param, ']')
+
+		incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	}
+
+	if r._path == "" {
+		r.setJson(incoming)
+		return nil
+	}
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+func (r IssueTopfield1) mergeSet() bool {
+	return false
+}
+func (r IssueTopfield1) currentJson() []byte {
+	if r._path == "" {
+		return r.json()
+	}
+
+	res := r.result()
+	return []byte(res.Raw)
+}
+func (r IssueTopfield1) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
+}
+func (r *IssueTopfield1) UnmarshalJSON(b []byte) error {
+	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
+		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		if err != nil {
+			return err
+		}
+		r.setJson(njson)
+		return nil
+	}
+
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
+
+	*r = IssueTopfield1{_json: &bcopy}
+	return nil
+}
+func (r IssueTopfield1) json() []byte {
+	if r._json == nil {
+		return []byte("")
+	}
+
+	return *r._json
+}
+func (r IssueTopfield1) path() string {
+	return r._path
+}
+func (r IssueTopfield1) setJson(v []byte) {
+	*r._json = v
+}
+func (r *IssueTopfield1) ensureJson() {
+	if r._json != nil {
+		return
+	}
+
+	b := r.json()
+	r._json = &b
+}
+func (r IssueTopfield1) result() gjson.Result {
+	if r._path == "" {
+		return gjson.ParseBytes(r.json())
+	}
+	return gjson.GetBytes(r.json(), r.path())
+}
+func (r IssueTopfield1) Exists() bool {
+	return r.result().Exists()
+}
+func (r IssueTopfield1) Delete() error {
 	res, err := sjson.DeleteBytes(r.json(), r.path())
 	if err != nil {
 		return err

@@ -15,8 +15,8 @@ resources:
     source: ./testdata/allof.json
   - url: allofoneof.json
     source: ./testdata/allofoneof.json
-  - url: issue.json
-    source: ./testdata/issue.json
+  - url: array.json
+    source: ./testdata/array.json
 
 generate:
   - simple.json
@@ -25,4 +25,4 @@ generate:
   - oneofroot.json
   - allof.json
   - allofoneof.json
-  - issue.json
+  - array.json

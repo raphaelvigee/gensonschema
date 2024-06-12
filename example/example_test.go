@@ -152,9 +152,17 @@ func TestAllOfOneOf(t *testing.T) {
 	_ = obj.GetData().AsAllOf3OneOf1().GetD2()
 }
 
-func TestIssue(t *testing.T) {
-	var obj gen.IssueIssue
+func TestArray(t *testing.T) {
+	var obj gen.ArrayArray
+	err := json.Unmarshal([]byte(`{"topfield1": [{"field1": "hello"}]}`), &obj)
+	require.NoError(t, err)
 
-	_ = obj.GetTopfield1().At(0).GetField1()
+	value := obj.GetTopfield1().At(0).GetField1().Value()
+	assert.Equal(t, "hello", value)
+
 	_ = obj.GetTopfield1().At(0).GetField2()
+
+	_ = obj.GetTopfield1().Clear()
+
+	assert.Empty(t, obj.GetTopfield1().Len())
 }

@@ -45,9 +45,6 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 	})
 
 	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r %[1]v) mergeSet() bool {
-		return %[2]v
-	}
 	func (r %[1]v) currentJson() []byte {
 		if r._path == "" {
 			return r.json()
@@ -121,7 +118,22 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 		r.setJson(res)
 		return nil
 	}
-	`, s.name, mergeSet))
+	func (r *%[1]v) set(incoming []byte) error {
+		r.ensureJson()
+
+		if r._path == "" {
+			r.setJson(incoming)
+			return nil	
+		}
+
+		res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+		if err != nil {
+			return err
+		}
+		r.setJson(res)
+		return nil
+	}
+	`, s.name))
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
@@ -142,27 +154,18 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 
 		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Set(v %v) error {
-			r.ensureJson()
-			if r._path == "" {
-				b, err := json.Marshal(v)
-				if err != nil { return err }
-				r.setJson(b)
-				return nil	
-			}
-			res, err := sjson.SetBytes(r.json(), r.path(), v)
-			if err != nil {
-				return err
-			}
-			r.setJson(res)
-			return nil
+			b, err := json.Marshal(v)
+			if err != nil { return err }
+
+			return r.set(b)
 		}
 		`, s.name, typ))
 	} else {
-		s.methods = append(s.methods, fmt.Sprintf(`
-		func (r %v) Set(v *%v) error {
-			incoming := v.currentJson()
-
-			if r.mergeSet() {
+		if mergeSet {
+			s.methods = append(s.methods, fmt.Sprintf(`
+			func (r %v) Set(v *%v) error {
+				incoming := v.currentJson()
+		
 				param := []byte{'['}
 				param = append(param, r.currentJson()...)
 				param = append(param, ',')
@@ -170,21 +173,19 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 				param = append(param, ']')
 	
 				incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+		
+				return r.set(incoming)
 			}
+			`, s.name, s.name))
+		} else {
+			s.methods = append(s.methods, fmt.Sprintf(`
+			func (r %v) Set(v *%v) error {
+				incoming := v.currentJson()
 
-			if r._path == "" {
-				r.setJson(incoming)
-				return nil	
+				return r.set(incoming)
 			}
-
-			res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-			if err != nil {
-				return err
-			}
-			r.setJson(res)
-			return nil
+			`, s.name, s.name))
 		}
-		`, s.name, s.name))
 	}
 }
 
@@ -227,6 +228,11 @@ func (s *structType) AddIndexGetter(styp string) {
 			res := r.result()
 			if !res.IsArray() { return 0 }
 			return int(res.Get("#").Int())
+		}
+	`, s.name))
+	s.methods = append(s.methods, fmt.Sprintf(`
+		func (r %v) Clear() error {
+			return r.set([]byte("[]"))
 		}
 	`, s.name))
 }

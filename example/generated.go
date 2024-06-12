@@ -4,7 +4,7 @@ package gen
 
 import (
 	"encoding/json"
-	"fmt"
+	"strconv"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -55,6 +55,9 @@ func (r AllOf) currentJson() []byte {
 }
 func (r AllOf) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r AllOf) JSON() []byte {
+	return r.currentJson()
 }
 func (r *AllOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -164,6 +167,9 @@ func (r AllOfOneOf) currentJson() []byte {
 func (r AllOfOneOf) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r AllOfOneOf) JSON() []byte {
+	return r.currentJson()
+}
 func (r *AllOfOneOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -271,6 +277,9 @@ func (r AllofDefinitionsAddress) currentJson() []byte {
 }
 func (r AllofDefinitionsAddress) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r AllofDefinitionsAddress) JSON() []byte {
+	return r.currentJson()
 }
 func (r *AllofDefinitionsAddress) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -395,6 +404,9 @@ func (r AllofShipping_address) currentJson() []byte {
 }
 func (r AllofShipping_address) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r AllofShipping_address) JSON() []byte {
+	return r.currentJson()
 }
 func (r *AllofShipping_address) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -560,6 +572,9 @@ func (r AllofoneofData) currentJson() []byte {
 func (r AllofoneofData) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r AllofoneofData) JSON() []byte {
+	return r.currentJson()
+}
 func (r *AllofoneofData) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -667,6 +682,9 @@ func (r AllofoneofDataAllOf0OneOf0) currentJson() []byte {
 }
 func (r AllofoneofDataAllOf0OneOf0) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r AllofoneofDataAllOf0OneOf0) JSON() []byte {
+	return r.currentJson()
 }
 func (r *AllofoneofDataAllOf0OneOf0) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -776,6 +794,9 @@ func (r AllofoneofDataAllOf0OneOf1) currentJson() []byte {
 func (r AllofoneofDataAllOf0OneOf1) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r AllofoneofDataAllOf0OneOf1) JSON() []byte {
+	return r.currentJson()
+}
 func (r *AllofoneofDataAllOf0OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -883,6 +904,9 @@ func (r AllofoneofDataAllOf2OneOf0) currentJson() []byte {
 }
 func (r AllofoneofDataAllOf2OneOf0) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r AllofoneofDataAllOf2OneOf0) JSON() []byte {
+	return r.currentJson()
 }
 func (r *AllofoneofDataAllOf2OneOf0) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -992,6 +1016,9 @@ func (r AllofoneofDataAllOf2OneOf1) currentJson() []byte {
 func (r AllofoneofDataAllOf2OneOf1) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r AllofoneofDataAllOf2OneOf1) JSON() []byte {
+	return r.currentJson()
+}
 func (r *AllofoneofDataAllOf2OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -1100,6 +1127,9 @@ func (r AllofoneofDataAllOf3OneOf1) currentJson() []byte {
 func (r AllofoneofDataAllOf3OneOf1) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r AllofoneofDataAllOf3OneOf1) JSON() []byte {
+	return r.currentJson()
+}
 func (r *AllofoneofDataAllOf3OneOf1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -1197,6 +1227,14 @@ func (r *ArrayArray) GetTopfield1() *ArrayTopfield1 {
 	}
 }
 
+func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
+	r.ensureJson()
+	return &ArrayTopfield2{
+		_path: pathJoin(r._path, "topfield2"),
+		_json: r._json,
+	}
+}
+
 func (r ArrayArray) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1207,6 +1245,9 @@ func (r ArrayArray) currentJson() []byte {
 }
 func (r ArrayArray) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r ArrayArray) JSON() []byte {
+	return r.currentJson()
 }
 func (r *ArrayArray) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1324,6 +1365,9 @@ func (r ArrayDefinitionsDef1) currentJson() []byte {
 func (r ArrayDefinitionsDef1) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r ArrayDefinitionsDef1) JSON() []byte {
+	return r.currentJson()
+}
 func (r *ArrayDefinitionsDef1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -1413,10 +1457,14 @@ func (r ArrayTopfield1) Set(v *ArrayTopfield1) error {
 	return r.set(incoming)
 }
 
+func (r *ArrayTopfield1) Append(v *ArrayDefinitionsDef1) error {
+	return r.At(-1).Set(v)
+}
+
 func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
 	r.ensureJson()
 	return &ArrayDefinitionsDef1{
-		_path: pathJoin(r._path, fmt.Sprint(i)),
+		_path: pathJoin(r._path, strconv.Itoa(i)),
 		_json: r._json,
 	}
 }
@@ -1443,6 +1491,9 @@ func (r ArrayTopfield1) currentJson() []byte {
 }
 func (r ArrayTopfield1) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r ArrayTopfield1) JSON() []byte {
+	return r.currentJson()
 }
 func (r *ArrayTopfield1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1522,6 +1573,133 @@ func (r *ArrayTopfield1) set(incoming []byte) error {
 	return nil
 }
 
+type ArrayTopfield2 struct {
+	_path string
+	_json *[]byte
+}
+
+func (r ArrayTopfield2) Set(v *ArrayTopfield2) error {
+	incoming := v.currentJson()
+
+	return r.set(incoming)
+}
+
+func (r *ArrayTopfield2) Append(v string) error {
+	return r.At(-1).Set(v)
+}
+
+func (r *ArrayTopfield2) At(i int) *String {
+	r.ensureJson()
+	return &String{
+		_path: pathJoin(r._path, strconv.Itoa(i)),
+		_json: r._json,
+	}
+}
+
+func (r ArrayTopfield2) Clear() error {
+	return r.set([]byte("[]"))
+}
+
+func (r ArrayTopfield2) Len() int {
+	res := r.result()
+	if !res.IsArray() {
+		return 0
+	}
+	return int(res.Get("#").Int())
+}
+
+func (r ArrayTopfield2) currentJson() []byte {
+	if r._path == "" {
+		return r.json()
+	}
+
+	res := r.result()
+	return []byte(res.Raw)
+}
+func (r ArrayTopfield2) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
+}
+func (r ArrayTopfield2) JSON() []byte {
+	return r.currentJson()
+}
+func (r *ArrayTopfield2) UnmarshalJSON(b []byte) error {
+	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
+		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		if err != nil {
+			return err
+		}
+		r.setJson(njson)
+		return nil
+	}
+
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
+
+	*r = ArrayTopfield2{_json: &bcopy}
+	return nil
+}
+func (r ArrayTopfield2) json() []byte {
+	if r._json == nil {
+		return []byte("")
+	}
+
+	return *r._json
+}
+func (r ArrayTopfield2) path() string {
+	return r._path
+}
+func (r ArrayTopfield2) setJson(v []byte) {
+	*r._json = v
+}
+func (r *ArrayTopfield2) ensureJson() {
+	if r._json != nil {
+		return
+	}
+
+	b := r.json()
+	r._json = &b
+}
+func (r ArrayTopfield2) result() gjson.Result {
+	if r._path == "" {
+		return gjson.ParseBytes(r.json())
+	}
+	return gjson.GetBytes(r.json(), r.path())
+}
+func (r ArrayTopfield2) Exists() bool {
+	return r.result().Exists()
+}
+func (r ArrayTopfield2) Delete() error {
+	res, err := sjson.DeleteBytes(r.json(), r.path())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+func (r *ArrayTopfield2) set(incoming []byte) error {
+	r.ensureJson()
+
+	if r._path == "" {
+		r.setJson(incoming)
+		return nil
+	}
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
 type ArraysSchemaArraysSchema struct {
 	_path string
 	_json *[]byte
@@ -1559,6 +1737,9 @@ func (r ArraysSchemaArraysSchema) currentJson() []byte {
 }
 func (r ArraysSchemaArraysSchema) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r ArraysSchemaArraysSchema) JSON() []byte {
+	return r.currentJson()
 }
 func (r *ArraysSchemaArraysSchema) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1676,6 +1857,9 @@ func (r ArraysSchemaDefsVeggie) currentJson() []byte {
 func (r ArraysSchemaDefsVeggie) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r ArraysSchemaDefsVeggie) JSON() []byte {
+	return r.currentJson()
+}
 func (r *ArraysSchemaDefsVeggie) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -1765,10 +1949,14 @@ func (r ArraysSchemaFruits) Set(v *ArraysSchemaFruits) error {
 	return r.set(incoming)
 }
 
+func (r *ArraysSchemaFruits) Append(v string) error {
+	return r.At(-1).Set(v)
+}
+
 func (r *ArraysSchemaFruits) At(i int) *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, fmt.Sprint(i)),
+		_path: pathJoin(r._path, strconv.Itoa(i)),
 		_json: r._json,
 	}
 }
@@ -1795,6 +1983,9 @@ func (r ArraysSchemaFruits) currentJson() []byte {
 }
 func (r ArraysSchemaFruits) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r ArraysSchemaFruits) JSON() []byte {
+	return r.currentJson()
 }
 func (r *ArraysSchemaFruits) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -1885,10 +2076,14 @@ func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
 	return r.set(incoming)
 }
 
+func (r *ArraysSchemaVegetables) Append(v *ArraysSchemaDefsVeggie) error {
+	return r.At(-1).Set(v)
+}
+
 func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
 	r.ensureJson()
 	return &ArraysSchemaDefsVeggie{
-		_path: pathJoin(r._path, fmt.Sprint(i)),
+		_path: pathJoin(r._path, strconv.Itoa(i)),
 		_json: r._json,
 	}
 }
@@ -1915,6 +2110,9 @@ func (r ArraysSchemaVegetables) currentJson() []byte {
 }
 func (r ArraysSchemaVegetables) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r ArraysSchemaVegetables) JSON() []byte {
+	return r.currentJson()
 }
 func (r *ArraysSchemaVegetables) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2022,6 +2220,9 @@ func (r Bool) currentJson() []byte {
 }
 func (r Bool) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r Bool) JSON() []byte {
+	return r.currentJson()
 }
 func (r *Bool) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2131,6 +2332,9 @@ func (r DNestedTitle1) currentJson() []byte {
 func (r DNestedTitle1) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r DNestedTitle1) JSON() []byte {
+	return r.currentJson()
+}
 func (r *DNestedTitle1) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -2237,6 +2441,9 @@ func (r Int64) currentJson() []byte {
 }
 func (r Int64) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r Int64) JSON() []byte {
+	return r.currentJson()
 }
 func (r *Int64) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2345,6 +2552,9 @@ func (r OneOf) currentJson() []byte {
 }
 func (r OneOf) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r OneOf) JSON() []byte {
+	return r.currentJson()
 }
 func (r *OneOf) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2462,6 +2672,9 @@ func (r OneOfRootObj) currentJson() []byte {
 func (r OneOfRootObj) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r OneOfRootObj) JSON() []byte {
+	return r.currentJson()
+}
 func (r *OneOfRootObj) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -2577,6 +2790,9 @@ func (r OneofData) currentJson() []byte {
 }
 func (r OneofData) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r OneofData) JSON() []byte {
+	return r.currentJson()
 }
 func (r *OneofData) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2702,6 +2918,9 @@ func (r Person) currentJson() []byte {
 func (r Person) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
 }
+func (r Person) JSON() []byte {
+	return r.currentJson()
+}
 func (r *Person) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
 		if r._path == "" {
@@ -2808,6 +3027,9 @@ func (r String) currentJson() []byte {
 }
 func (r String) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r String) JSON() []byte {
+	return r.currentJson()
 }
 func (r *String) UnmarshalJSON(b []byte) error {
 	if r._json != nil {
@@ -2924,6 +3146,9 @@ func (r Vehicle) currentJson() []byte {
 }
 func (r Vehicle) MarshalJSON() ([]byte, error) {
 	return r.currentJson(), nil
+}
+func (r Vehicle) JSON() []byte {
+	return r.currentJson()
 }
 func (r *Vehicle) UnmarshalJSON(b []byte) error {
 	if r._json != nil {

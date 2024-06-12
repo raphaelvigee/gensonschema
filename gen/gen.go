@@ -56,6 +56,9 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 	func (r %[1]v) MarshalJSON() ([]byte, error) {
 		return r.currentJson(), nil
 	}
+	func (r %[1]v) JSON() []byte {
+		return r.currentJson()
+	}
 	func (r *%[1]v) UnmarshalJSON(b []byte) error {
 		if r._json != nil {
 			if r._path == "" {
@@ -213,16 +216,25 @@ func (s *structType) AddGetter(name, path, styp string) {
 	`, s.name, name, styp, styp, path))
 }
 
-func (s *structType) AddIndexGetter(styp string) {
+func (s *structType) AddIndexGetter(styp string, dtype string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) At(i int) *%v {
 			r.ensureJson()
 			return &%v{ 
-				_path: pathJoin(r._path, fmt.Sprint(i)),
+				_path: pathJoin(r._path, strconv.Itoa(i)),
 				_json: r._json,
 			}
 		}
 	`, s.name, styp, styp))
+	appendType := "*" + styp
+	if dtype != "" {
+		appendType = dtype
+	}
+	s.methods = append(s.methods, fmt.Sprintf(`
+		func (r *%v) Append(v %v) error {
+			return r.At(-1).Set(v)
+		}
+	`, s.name, appendType))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Len() int {
 			res := r.result()
@@ -404,7 +416,7 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 		styp := &structType{name: name}
 		styp.MakeStore("")
 
-		styp.AddIndexGetter(itemStyp)
+		styp.AddIndexGetter(itemStyp, itemDtype)
 
 		g.registerStruct(styp)
 
@@ -643,6 +655,7 @@ func Gen(config Config) error {
 	g.imports["github.com/tidwall/gjson"] = struct{}{}
 	g.imports["github.com/tidwall/sjson"] = struct{}{}
 	g.imports["encoding/json"] = struct{}{}
+	g.imports["strconv"] = struct{}{}
 	g.imports["fmt"] = struct{}{}
 
 	w := writer{g.config.Out}

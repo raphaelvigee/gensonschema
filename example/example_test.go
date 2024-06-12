@@ -165,4 +165,8 @@ func TestArray(t *testing.T) {
 	_ = obj.GetTopfield1().Clear()
 
 	assert.Empty(t, obj.GetTopfield1().Len())
+
+	_ = obj.GetTopfield2().Append("hello")
+
+	assert.JSONEq(t, `["hello"]`, string(obj.GetTopfield2().JSON()))
 }

@@ -22,6 +22,12 @@
       "items": {
         "$ref": "#/definitions/def1"
       }
+    },
+    "topfield2": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }

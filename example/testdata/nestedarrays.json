@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2019-09/schema",
+  "type": "object",
+  "properties": {
+    "field1": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field2": {
+            "type": "array",
+            "items": {
+              "title": "Some Title",
+              "type": "object",
+              "properties": {
+                "field3": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

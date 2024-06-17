@@ -170,3 +170,9 @@ func TestArray(t *testing.T) {
 
 	assert.JSONEq(t, `["hello"]`, string(obj.GetTopfield2().JSON()))
 }
+
+func TestNestedArrays(t *testing.T) {
+	var obj gen.NestedarraysNestedarrays
+
+	_ = obj.GetField1().At(0).GetField2().At(0).GetField3()
+}

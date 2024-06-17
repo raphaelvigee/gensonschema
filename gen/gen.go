@@ -528,7 +528,7 @@ func (g *generator) locationToTypeName(s string) string {
 
 	var parts []string
 	for _, part := range reg.Split(name, -1) {
-		if part == "" || part == "properties" || part == "items" {
+		if part == "" || part == "properties" {
 			continue
 		}
 		parts = append(parts, titleCase(part))

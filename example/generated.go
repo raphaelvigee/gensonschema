@@ -45,6 +45,10 @@ func (r *AllOf) GetShipping_address() *AllofShipping_address {
 	}
 }
 
+func (r *AllOf) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllOf) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -85,7 +89,7 @@ func (r *AllOf) UnmarshalJSON(b []byte) error {
 }
 func (r AllOf) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -156,6 +160,10 @@ func (r *AllOfOneOf) GetData() *AllofoneofData {
 	}
 }
 
+func (r *AllOfOneOf) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllOfOneOf) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -196,7 +204,7 @@ func (r *AllOfOneOf) UnmarshalJSON(b []byte) error {
 }
 func (r AllOfOneOf) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -267,6 +275,10 @@ func (r *AllofDefinitionsAddress) GetCity() *String {
 	}
 }
 
+func (r *AllofDefinitionsAddress) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofDefinitionsAddress) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -307,7 +319,7 @@ func (r *AllofDefinitionsAddress) UnmarshalJSON(b []byte) error {
 }
 func (r AllofDefinitionsAddress) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -394,6 +406,10 @@ func (r *AllofShipping_address) GetType() *String {
 	}
 }
 
+func (r *AllofShipping_address) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofShipping_address) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -434,7 +450,7 @@ func (r *AllofShipping_address) UnmarshalJSON(b []byte) error {
 }
 func (r AllofShipping_address) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -561,6 +577,10 @@ func (r *AllofoneofData) GetB() *String {
 	}
 }
 
+func (r *AllofoneofData) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofoneofData) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -601,7 +621,7 @@ func (r *AllofoneofData) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofData) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -672,6 +692,10 @@ func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
 	}
 }
 
+func (r *AllofoneofDataAllOf0OneOf0) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofoneofDataAllOf0OneOf0) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -712,7 +736,7 @@ func (r *AllofoneofDataAllOf0OneOf0) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf0OneOf0) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -783,6 +807,10 @@ func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
 	}
 }
 
+func (r *AllofoneofDataAllOf0OneOf1) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofoneofDataAllOf0OneOf1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -823,7 +851,7 @@ func (r *AllofoneofDataAllOf0OneOf1) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf0OneOf1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -894,6 +922,10 @@ func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
 	}
 }
 
+func (r *AllofoneofDataAllOf2OneOf0) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofoneofDataAllOf2OneOf0) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -934,7 +966,7 @@ func (r *AllofoneofDataAllOf2OneOf0) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf2OneOf0) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1005,6 +1037,10 @@ func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
 	}
 }
 
+func (r *AllofoneofDataAllOf2OneOf1) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofoneofDataAllOf2OneOf1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1045,7 +1081,7 @@ func (r *AllofoneofDataAllOf2OneOf1) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf2OneOf1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1116,6 +1152,10 @@ func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
 	}
 }
 
+func (r *AllofoneofDataAllOf3OneOf1) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r AllofoneofDataAllOf3OneOf1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1156,7 +1196,7 @@ func (r *AllofoneofDataAllOf3OneOf1) UnmarshalJSON(b []byte) error {
 }
 func (r AllofoneofDataAllOf3OneOf1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1235,6 +1275,10 @@ func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
 	}
 }
 
+func (r *ArrayArray) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r ArrayArray) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1275,7 +1319,7 @@ func (r *ArrayArray) UnmarshalJSON(b []byte) error {
 }
 func (r ArrayArray) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1354,6 +1398,10 @@ func (r *ArrayDefinitionsDef1) GetField2() *String {
 	}
 }
 
+func (r *ArrayDefinitionsDef1) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r ArrayDefinitionsDef1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1394,7 +1442,7 @@ func (r *ArrayDefinitionsDef1) UnmarshalJSON(b []byte) error {
 }
 func (r ArrayDefinitionsDef1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1481,6 +1529,10 @@ func (r ArrayTopfield1) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r *ArrayTopfield1) defaultJson() []byte {
+	return []byte("[]")
+}
+
 func (r ArrayTopfield1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1521,7 +1573,7 @@ func (r *ArrayTopfield1) UnmarshalJSON(b []byte) error {
 }
 func (r ArrayTopfield1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1617,6 +1669,10 @@ func (r ArrayTopfield2) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r *ArrayTopfield2) defaultJson() []byte {
+	return []byte("[]")
+}
+
 func (r ArrayTopfield2) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1657,7 +1713,7 @@ func (r *ArrayTopfield2) UnmarshalJSON(b []byte) error {
 }
 func (r ArrayTopfield2) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1736,6 +1792,10 @@ func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
 	}
 }
 
+func (r *ArraysSchemaArraysSchema) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r ArraysSchemaArraysSchema) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1776,7 +1836,7 @@ func (r *ArraysSchemaArraysSchema) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaArraysSchema) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1855,6 +1915,10 @@ func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
 	}
 }
 
+func (r *ArraysSchemaDefsVeggie) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r ArraysSchemaDefsVeggie) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -1895,7 +1959,7 @@ func (r *ArraysSchemaDefsVeggie) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaDefsVeggie) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -1991,6 +2055,10 @@ func (r ArraysSchemaFruits) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r *ArraysSchemaFruits) defaultJson() []byte {
+	return []byte("[]")
+}
+
 func (r ArraysSchemaFruits) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2031,7 +2099,7 @@ func (r *ArraysSchemaFruits) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaFruits) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2118,6 +2186,10 @@ func (r ArraysSchemaVegetables) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r *ArraysSchemaVegetables) defaultJson() []byte {
+	return []byte("[]")
+}
+
 func (r ArraysSchemaVegetables) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2158,7 +2230,7 @@ func (r *ArraysSchemaVegetables) UnmarshalJSON(b []byte) error {
 }
 func (r ArraysSchemaVegetables) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2228,6 +2300,10 @@ func (r *Bool) Set(v bool) error {
 	return r.set(b)
 }
 
+func (r *Bool) defaultJson() []byte {
+	return []byte("")
+}
+
 func (r Bool) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2268,7 +2344,7 @@ func (r *Bool) UnmarshalJSON(b []byte) error {
 }
 func (r Bool) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2339,6 +2415,10 @@ func (r *DNestedTitle1) GetD1() *String {
 	}
 }
 
+func (r *DNestedTitle1) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r DNestedTitle1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2379,7 +2459,7 @@ func (r *DNestedTitle1) UnmarshalJSON(b []byte) error {
 }
 func (r DNestedTitle1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2449,6 +2529,10 @@ func (r *Int64) Set(v int64) error {
 	return r.set(b)
 }
 
+func (r *Int64) defaultJson() []byte {
+	return []byte("")
+}
+
 func (r Int64) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2489,7 +2573,7 @@ func (r *Int64) UnmarshalJSON(b []byte) error {
 }
 func (r Int64) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2576,6 +2660,10 @@ func (r NestedarraysField1) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r *NestedarraysField1) defaultJson() []byte {
+	return []byte("[]")
+}
+
 func (r NestedarraysField1) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2616,7 +2704,7 @@ func (r *NestedarraysField1) UnmarshalJSON(b []byte) error {
 }
 func (r NestedarraysField1) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2687,6 +2775,10 @@ func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
 	}
 }
 
+func (r *NestedarraysField1Items) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r NestedarraysField1Items) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2727,7 +2819,7 @@ func (r *NestedarraysField1Items) UnmarshalJSON(b []byte) error {
 }
 func (r NestedarraysField1Items) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2814,6 +2906,10 @@ func (r NestedarraysField1ItemsField2) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r *NestedarraysField1ItemsField2) defaultJson() []byte {
+	return []byte("[]")
+}
+
 func (r NestedarraysField1ItemsField2) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2854,7 +2950,7 @@ func (r *NestedarraysField1ItemsField2) UnmarshalJSON(b []byte) error {
 }
 func (r NestedarraysField1ItemsField2) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -2925,6 +3021,10 @@ func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
 	}
 }
 
+func (r *NestedarraysNestedarrays) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r NestedarraysNestedarrays) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -2965,7 +3065,7 @@ func (r *NestedarraysNestedarrays) UnmarshalJSON(b []byte) error {
 }
 func (r NestedarraysNestedarrays) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3036,6 +3136,10 @@ func (r *OneOf) GetData() *OneofData {
 	}
 }
 
+func (r *OneOf) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r OneOf) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3076,7 +3180,7 @@ func (r *OneOf) UnmarshalJSON(b []byte) error {
 }
 func (r OneOf) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3155,6 +3259,10 @@ func (r *OneOfRootObj) AsVehicle() *Vehicle {
 	}
 }
 
+func (r *OneOfRootObj) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r OneOfRootObj) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3195,7 +3303,7 @@ func (r *OneOfRootObj) UnmarshalJSON(b []byte) error {
 }
 func (r OneOfRootObj) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3274,6 +3382,10 @@ func (r *OneofData) AsVehicle() *Vehicle {
 	}
 }
 
+func (r *OneofData) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r OneofData) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3314,7 +3426,7 @@ func (r *OneofData) UnmarshalJSON(b []byte) error {
 }
 func (r OneofData) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3401,6 +3513,10 @@ func (r *Person) GetSport() *String {
 	}
 }
 
+func (r *Person) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r Person) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3441,7 +3557,7 @@ func (r *Person) UnmarshalJSON(b []byte) error {
 }
 func (r Person) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3512,6 +3628,10 @@ func (r *SomeTitle) GetField3() *String {
 	}
 }
 
+func (r *SomeTitle) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r SomeTitle) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3552,7 +3672,7 @@ func (r *SomeTitle) UnmarshalJSON(b []byte) error {
 }
 func (r SomeTitle) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3622,6 +3742,10 @@ func (r *String) Set(v string) error {
 	return r.set(b)
 }
 
+func (r *String) defaultJson() []byte {
+	return []byte("")
+}
+
 func (r String) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3662,7 +3786,7 @@ func (r *String) UnmarshalJSON(b []byte) error {
 }
 func (r String) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json
@@ -3741,6 +3865,10 @@ func (r *Vehicle) GetPrice() *Int64 {
 	}
 }
 
+func (r *Vehicle) defaultJson() []byte {
+	return []byte("{}")
+}
+
 func (r Vehicle) currentJson() []byte {
 	if r._path == "" {
 		return r.json()
@@ -3781,7 +3909,7 @@ func (r *Vehicle) UnmarshalJSON(b []byte) error {
 }
 func (r Vehicle) json() []byte {
 	if r._json == nil {
-		return []byte("")
+		return r.defaultJson()
 	}
 
 	return *r._json

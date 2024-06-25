@@ -171,10 +171,25 @@ func TestArray(t *testing.T) {
 	assert.JSONEq(t, `["hello"]`, string(obj.GetTopfield2().JSON()))
 
 	_ = any(obj.GetTopfield2().Value()).([]string)
+
+	var obj2 gen.ArrayArray
+	_ = obj2.GetTopfield2().Append("hello")
+
+	assert.Equal(t, `{"topfield2":["hello"]}`, string(obj2.JSON()))
 }
 
 func TestNestedArrays(t *testing.T) {
 	var obj gen.NestedarraysNestedarrays
 
-	_ = obj.GetField1().At(0).GetField2().At(0).GetField3()
+	_ = obj.GetField1().At(0).GetField2().At(0).GetField3().Set("hello")
+
+	assert.Equal(t, `{"field1":[{"field2":[{"field3":"hello"}]}]}`, string(obj.JSON()))
+
+	var obj2 gen.NestedarraysField1
+	var v gen.NestedarraysField1Items
+	_ = json.Unmarshal([]byte("{}"), &v)
+
+	_ = obj2.Append(&v)
+
+	assert.Equal(t, `[{}]`, string(obj2.JSON()))
 }

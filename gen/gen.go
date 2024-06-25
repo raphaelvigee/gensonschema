@@ -30,11 +30,11 @@ var wellKnownTypes = map[string]string{
 	"string":  "String()",
 }
 
-func (s *structType) MakeStore(typ string) {
-	s.MakeStoreWith(typ, false)
+func (s *structType) MakeStore(typ, defaultJson string) {
+	s.MakeStoreWith(typ, defaultJson, false)
 }
 
-func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
+func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 	s.AddField(StructField{
 		Name: "_path",
 		Type: "string",
@@ -85,7 +85,7 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 	}
 	func (r %[1]v) json() []byte {
 		if r._json == nil {
-			return []byte("")
+			return r.defaultJson()
 		}
 		
 		return *r._json
@@ -190,6 +190,12 @@ func (s *structType) MakeStoreWith(typ string, mergeSet bool) {
 			`, s.name, s.name))
 		}
 	}
+
+	s.methods = append(s.methods, fmt.Sprintf(`
+	func (r *%v) defaultJson() []byte {
+		return []byte("%v")
+	}
+	`, s.name, defaultJson))
 }
 
 func (s *structType) AddField(f StructField) {
@@ -365,7 +371,7 @@ func (g *generator) genTypeForPrimitive(sch *jsonschema.Schema) (string, string,
 
 func (g *generator) genStoreForTypeName(goType string) (string, string, error) {
 	storeType := &structType{name: g.typeToName(goType)}
-	storeType.MakeStore(goType)
+	storeType.MakeStore(goType, "")
 
 	return g.registerStruct(storeType), goType, nil
 }
@@ -419,7 +425,7 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 		}
 
 		styp := &structType{name: name}
-		styp.MakeStore(dType)
+		styp.MakeStore(dType, "[]")
 
 		styp.AddIndexGetter(itemStyp, itemDtype)
 
@@ -437,7 +443,8 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 
 func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSet bool) (string, string, error) {
 	storeType := &structType{name: name}
-	storeType.MakeStoreWith("", mergeSet)
+
+	commonGoType := ""
 
 	for i, sch := range schs {
 		if sch.OneOf != nil {
@@ -445,9 +452,12 @@ func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSe
 			if prefix == "" {
 				prefix = fmt.Sprintf("AllOf%vOneOf", i)
 			}
-			_, err := g.asTypeForInto(storeType, prefix, sch.OneOf)
+			goType, err := g.asTypeForInto(storeType, prefix, sch.OneOf)
 			if err != nil {
 				return "", "", err
+			}
+			if len(schs) == 1 {
+				commonGoType = goType
 			}
 			continue
 		}
@@ -457,9 +467,12 @@ func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSe
 			if prefix == "" {
 				prefix = fmt.Sprintf("AllOf%vAnyOf", i)
 			}
-			_, err := g.asTypeForInto(storeType, prefix, sch.AnyOf)
+			goType, err := g.asTypeForInto(storeType, prefix, sch.AnyOf)
 			if err != nil {
 				return "", "", err
+			}
+			if len(schs) == 1 {
+				commonGoType = goType
 			}
 			continue
 		}
@@ -485,6 +498,8 @@ func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSe
 			storeType.AddGetter(name, propName, styp)
 		}
 	}
+
+	storeType.MakeStoreWith(commonGoType, g.goTypeToDefaultJson(commonGoType), mergeSet)
 
 	return g.registerStruct(storeType), "", nil
 }
@@ -628,9 +643,21 @@ func (g *generator) asTypeFor(name, prefix string, schs []*jsonschema.Schema) (s
 		return "", "", err
 	}
 
-	stype.MakeStore(commonGoType)
+	stype.MakeStore(commonGoType, g.goTypeToDefaultJson(commonGoType))
 
 	return g.registerStruct(stype), commonGoType, nil
+}
+
+func (g *generator) goTypeToDefaultJson(goType string) string {
+	if strings.HasPrefix(goType, "[]") {
+		return "[]"
+	}
+
+	if goType == "" {
+		return "{}"
+	}
+
+	return ""
 }
 
 func (g *generator) flattenAllOfs(sch *jsonschema.Schema) []*jsonschema.Schema {

@@ -1578,12 +1578,12 @@ type ArrayTopfield2 struct {
 	_json *[]byte
 }
 
-func (r ArrayTopfield2) Set(v *ArrayTopfield2) error {
-	incoming := v.currentJson()
-
-	return r.set(incoming)
+func (r ArrayTopfield2) Value() []string {
+	res := r.result()
+	var v []string
+	_ = json.Unmarshal([]byte(res.Raw), &v)
+	return v
 }
-
 func (r *ArrayTopfield2) Append(v string) error {
 	return r.At(-1).Set(v)
 }
@@ -1594,6 +1594,15 @@ func (r *ArrayTopfield2) At(i int) *String {
 		_path: pathJoin(r._path, strconv.Itoa(i)),
 		_json: r._json,
 	}
+}
+
+func (r *ArrayTopfield2) Set(v []string) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	return r.set(b)
 }
 
 func (r ArrayTopfield2) Clear() error {
@@ -1943,12 +1952,12 @@ type ArraysSchemaFruits struct {
 	_json *[]byte
 }
 
-func (r ArraysSchemaFruits) Set(v *ArraysSchemaFruits) error {
-	incoming := v.currentJson()
-
-	return r.set(incoming)
+func (r ArraysSchemaFruits) Value() []string {
+	res := r.result()
+	var v []string
+	_ = json.Unmarshal([]byte(res.Raw), &v)
+	return v
 }
-
 func (r *ArraysSchemaFruits) Append(v string) error {
 	return r.At(-1).Set(v)
 }
@@ -1959,6 +1968,15 @@ func (r *ArraysSchemaFruits) At(i int) *String {
 		_path: pathJoin(r._path, strconv.Itoa(i)),
 		_json: r._json,
 	}
+}
+
+func (r *ArraysSchemaFruits) Set(v []string) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	return r.set(b)
 }
 
 func (r ArraysSchemaFruits) Clear() error {

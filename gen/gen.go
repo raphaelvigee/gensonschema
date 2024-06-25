@@ -413,8 +413,13 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 			return "", "", err
 		}
 
+		dType := ""
+		if itemDtype != "" {
+			dType = "[]" + itemDtype
+		}
+
 		styp := &structType{name: name}
-		styp.MakeStore("")
+		styp.MakeStore(dType)
 
 		styp.AddIndexGetter(itemStyp, itemDtype)
 
@@ -424,7 +429,7 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 			return styp.name, "", nil
 		}
 
-		return styp.name, "[]" + itemDtype, nil
+		return styp.name, dType, nil
 	}
 
 	if sch.Types[0] != "object" {
@@ -444,7 +449,7 @@ func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSe
 			if prefix == "" {
 				prefix = fmt.Sprintf("AllOf%vOneOf", i)
 			}
-			err := g.asTypeForInto(storeType, prefix, sch.OneOf)
+			_, err := g.asTypeForInto(storeType, prefix, sch.OneOf)
 			if err != nil {
 				return "", "", err
 			}
@@ -456,7 +461,7 @@ func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSe
 			if prefix == "" {
 				prefix = fmt.Sprintf("AllOf%vAnyOf", i)
 			}
-			err := g.asTypeForInto(storeType, prefix, sch.AnyOf)
+			_, err := g.asTypeForInto(storeType, prefix, sch.AnyOf)
 			if err != nil {
 				return "", "", err
 			}
@@ -588,11 +593,12 @@ func (g *generator) compositeName(prefix string, i int, sch *jsonschema.Schema) 
 	return fmt.Sprintf("%v%v", prefix, i)
 }
 
-func (g *generator) asTypeForInto(stype *structType, prefix string, schs []*jsonschema.Schema) error {
+func (g *generator) asTypeForInto(stype *structType, prefix string, schs []*jsonschema.Schema) (string, error) {
+	commonGoType, sameGoType := "", true
 	for i, sch := range schs {
-		chStype, _, err := g.genTypeFor("", sch)
+		chStype, goType, err := g.genTypeFor("", sch)
 		if err != nil {
-			return err
+			return "", err
 		}
 
 		if chStype == "" {
@@ -601,19 +607,32 @@ func (g *generator) asTypeForInto(stype *structType, prefix string, schs []*json
 
 		fieldName := g.compositeName(prefix, i, sch)
 		stype.AddAsGetter(fieldName, chStype)
+
+		if sameGoType {
+			if commonGoType == "" || commonGoType == goType {
+				commonGoType = goType
+			} else if commonGoType != goType {
+				sameGoType = false
+			}
+		}
 	}
 
-	return nil
+	if sameGoType {
+		return commonGoType, nil
+	}
+
+	return "", nil
 }
 
 func (g *generator) asTypeFor(name, prefix string, schs []*jsonschema.Schema) (string, string, error) {
 	stype := &structType{name: name}
-	stype.MakeStore("")
 
-	err := g.asTypeForInto(stype, prefix, schs)
+	commonGoType, err := g.asTypeForInto(stype, prefix, schs)
 	if err != nil {
 		return "", "", err
 	}
+
+	stype.MakeStore(commonGoType)
 
 	return g.registerStruct(stype), "", nil
 }

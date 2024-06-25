@@ -425,10 +425,6 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 
 		g.registerStruct(styp)
 
-		if itemDtype == "" {
-			return styp.name, "", nil
-		}
-
 		return styp.name, dType, nil
 	}
 
@@ -634,7 +630,7 @@ func (g *generator) asTypeFor(name, prefix string, schs []*jsonschema.Schema) (s
 
 	stype.MakeStore(commonGoType)
 
-	return g.registerStruct(stype), "", nil
+	return g.registerStruct(stype), commonGoType, nil
 }
 
 func (g *generator) flattenAllOfs(sch *jsonschema.Schema) []*jsonschema.Schema {

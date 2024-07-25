@@ -44,7 +44,7 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 	`, s.name, strconv.Quote(defaultJson)))
 
 	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r %v) defaultJson() []byte {
+	func (r %v) typeDefaultJson() []byte {
 		return []byte("%v")
 	}
 	`, s.name, defaultJson))

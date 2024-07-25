@@ -9,7 +9,7 @@ func pathJoin(p1, p2 string) string {
 }
 
 type __delegate interface {
-	defaultJson() []byte
+    typeDefaultJson() []byte
 }
 
 type __node[D __delegate] struct {
@@ -143,6 +143,6 @@ func (r __node[D]) copy() __node[D] {
 
 func (r __node[D]) defaultJson() []byte {
     var d D
-	return d.defaultJson()
+	return d.typeDefaultJson()
 }
 

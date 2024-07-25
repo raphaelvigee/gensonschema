@@ -19,7 +19,7 @@ func pathJoin(p1, p2 string) string {
 }
 
 type __delegate interface {
-	defaultJson() []byte
+	typeDefaultJson() []byte
 }
 
 type __node[D __delegate] struct {
@@ -153,7 +153,7 @@ func (r __node[D]) copy() __node[D] {
 
 func (r __node[D]) defaultJson() []byte {
 	var d D
-	return d.defaultJson()
+	return d.typeDefaultJson()
 }
 
 type AllOf struct {
@@ -192,7 +192,7 @@ func (r AllOf) Copy() *AllOf {
 	}
 }
 
-func (r AllOf) defaultJson() []byte {
+func (r AllOf) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -222,7 +222,7 @@ func (r AllOfOneOf) Copy() *AllOfOneOf {
 	}
 }
 
-func (r AllOfOneOf) defaultJson() []byte {
+func (r AllOfOneOf) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -252,7 +252,7 @@ func (r AllofDefinitionsAddress) Copy() *AllofDefinitionsAddress {
 	}
 }
 
-func (r AllofDefinitionsAddress) defaultJson() []byte {
+func (r AllofDefinitionsAddress) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -292,7 +292,7 @@ func (r AllofShipping_address) Copy() *AllofShipping_address {
 	}
 }
 
-func (r AllofShipping_address) defaultJson() []byte {
+func (r AllofShipping_address) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -382,7 +382,7 @@ func (r AllofoneofData) Copy() *AllofoneofData {
 	}
 }
 
-func (r AllofoneofData) defaultJson() []byte {
+func (r AllofoneofData) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -412,7 +412,7 @@ func (r AllofoneofDataAllOf0OneOf0) Copy() *AllofoneofDataAllOf0OneOf0 {
 	}
 }
 
-func (r AllofoneofDataAllOf0OneOf0) defaultJson() []byte {
+func (r AllofoneofDataAllOf0OneOf0) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -442,7 +442,7 @@ func (r AllofoneofDataAllOf0OneOf1) Copy() *AllofoneofDataAllOf0OneOf1 {
 	}
 }
 
-func (r AllofoneofDataAllOf0OneOf1) defaultJson() []byte {
+func (r AllofoneofDataAllOf0OneOf1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -472,7 +472,7 @@ func (r AllofoneofDataAllOf2OneOf0) Copy() *AllofoneofDataAllOf2OneOf0 {
 	}
 }
 
-func (r AllofoneofDataAllOf2OneOf0) defaultJson() []byte {
+func (r AllofoneofDataAllOf2OneOf0) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -502,7 +502,7 @@ func (r AllofoneofDataAllOf2OneOf1) Copy() *AllofoneofDataAllOf2OneOf1 {
 	}
 }
 
-func (r AllofoneofDataAllOf2OneOf1) defaultJson() []byte {
+func (r AllofoneofDataAllOf2OneOf1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -532,7 +532,7 @@ func (r AllofoneofDataAllOf3OneOf1) Copy() *AllofoneofDataAllOf3OneOf1 {
 	}
 }
 
-func (r AllofoneofDataAllOf3OneOf1) defaultJson() []byte {
+func (r AllofoneofDataAllOf3OneOf1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -572,7 +572,7 @@ func (r ArrayArray) Copy() *ArrayArray {
 	}
 }
 
-func (r ArrayArray) defaultJson() []byte {
+func (r ArrayArray) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -612,7 +612,7 @@ func (r ArrayDefinitionsDef1) Copy() *ArrayDefinitionsDef1 {
 	}
 }
 
-func (r ArrayDefinitionsDef1) defaultJson() []byte {
+func (r ArrayDefinitionsDef1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -659,7 +659,7 @@ func (r ArrayTopfield1) Copy() *ArrayTopfield1 {
 	}
 }
 
-func (r ArrayTopfield1) defaultJson() []byte {
+func (r ArrayTopfield1) typeDefaultJson() []byte {
 	return []byte("[]")
 }
 
@@ -715,7 +715,7 @@ func (r ArrayTopfield2) Copy() *ArrayTopfield2 {
 	}
 }
 
-func (r ArrayTopfield2) defaultJson() []byte {
+func (r ArrayTopfield2) typeDefaultJson() []byte {
 	return []byte("[]")
 }
 
@@ -755,7 +755,7 @@ func (r ArraysSchemaArraysSchema) Copy() *ArraysSchemaArraysSchema {
 	}
 }
 
-func (r ArraysSchemaArraysSchema) defaultJson() []byte {
+func (r ArraysSchemaArraysSchema) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -795,7 +795,7 @@ func (r ArraysSchemaDefsVeggie) Copy() *ArraysSchemaDefsVeggie {
 	}
 }
 
-func (r ArraysSchemaDefsVeggie) defaultJson() []byte {
+func (r ArraysSchemaDefsVeggie) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -851,7 +851,7 @@ func (r ArraysSchemaFruits) Copy() *ArraysSchemaFruits {
 	}
 }
 
-func (r ArraysSchemaFruits) defaultJson() []byte {
+func (r ArraysSchemaFruits) typeDefaultJson() []byte {
 	return []byte("[]")
 }
 
@@ -898,7 +898,7 @@ func (r ArraysSchemaVegetables) Copy() *ArraysSchemaVegetables {
 	}
 }
 
-func (r ArraysSchemaVegetables) defaultJson() []byte {
+func (r ArraysSchemaVegetables) typeDefaultJson() []byte {
 	return []byte("[]")
 }
 
@@ -925,7 +925,7 @@ func (r Bool) Copy() *Bool {
 	}
 }
 
-func (r Bool) defaultJson() []byte {
+func (r Bool) typeDefaultJson() []byte {
 	return []byte("")
 }
 
@@ -955,7 +955,7 @@ func (r DNestedTitle1) Copy() *DNestedTitle1 {
 	}
 }
 
-func (r DNestedTitle1) defaultJson() []byte {
+func (r DNestedTitle1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -982,7 +982,7 @@ func (r Int64) Copy() *Int64 {
 	}
 }
 
-func (r Int64) defaultJson() []byte {
+func (r Int64) typeDefaultJson() []byte {
 	return []byte("")
 }
 
@@ -1029,7 +1029,7 @@ func (r NestedarraysField1) Copy() *NestedarraysField1 {
 	}
 }
 
-func (r NestedarraysField1) defaultJson() []byte {
+func (r NestedarraysField1) typeDefaultJson() []byte {
 	return []byte("[]")
 }
 
@@ -1059,7 +1059,7 @@ func (r NestedarraysField1Items) Copy() *NestedarraysField1Items {
 	}
 }
 
-func (r NestedarraysField1Items) defaultJson() []byte {
+func (r NestedarraysField1Items) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1106,7 +1106,7 @@ func (r NestedarraysField1ItemsField2) Copy() *NestedarraysField1ItemsField2 {
 	}
 }
 
-func (r NestedarraysField1ItemsField2) defaultJson() []byte {
+func (r NestedarraysField1ItemsField2) typeDefaultJson() []byte {
 	return []byte("[]")
 }
 
@@ -1136,7 +1136,7 @@ func (r NestedarraysNestedarrays) Copy() *NestedarraysNestedarrays {
 	}
 }
 
-func (r NestedarraysNestedarrays) defaultJson() []byte {
+func (r NestedarraysNestedarrays) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1166,7 +1166,7 @@ func (r OneOf) Copy() *OneOf {
 	}
 }
 
-func (r OneOf) defaultJson() []byte {
+func (r OneOf) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1206,7 +1206,7 @@ func (r OneOfRootObj) Copy() *OneOfRootObj {
 	}
 }
 
-func (r OneOfRootObj) defaultJson() []byte {
+func (r OneOfRootObj) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1246,7 +1246,7 @@ func (r OneofData) Copy() *OneofData {
 	}
 }
 
-func (r OneofData) defaultJson() []byte {
+func (r OneofData) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1296,7 +1296,7 @@ func (r Person) Copy() *Person {
 	}
 }
 
-func (r Person) defaultJson() []byte {
+func (r Person) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1326,7 +1326,7 @@ func (r SomeTitle) Copy() *SomeTitle {
 	}
 }
 
-func (r SomeTitle) defaultJson() []byte {
+func (r SomeTitle) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1353,7 +1353,7 @@ func (r String) Copy() *String {
 	}
 }
 
-func (r String) defaultJson() []byte {
+func (r String) typeDefaultJson() []byte {
 	return []byte("")
 }
 
@@ -1393,6 +1393,6 @@ func (r Vehicle) Copy() *Vehicle {
 	}
 }
 
-func (r Vehicle) defaultJson() []byte {
+func (r Vehicle) typeDefaultJson() []byte {
 	return []byte("{}")
 }

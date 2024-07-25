@@ -18,9 +18,146 @@ func pathJoin(p1, p2 string) string {
 	return p1 + "." + p2
 }
 
-type AllOf struct {
-	_path string
+type __delegate interface {
+	defaultJson() []byte
+}
+
+type __node[D __delegate] struct {
 	_json *[]byte
+	_path string
+}
+
+func (r __node[D]) currentJson() []byte {
+	if r._path == "" {
+		return r.json()
+	}
+
+	res := r.result()
+	return []byte(res.Raw)
+}
+
+func (r __node[D]) MarshalJSON() ([]byte, error) {
+	return r.currentJson(), nil
+}
+
+func (r __node[D]) JSON() []byte {
+	return r.currentJson()
+}
+
+func (r *__node[D]) UnmarshalJSON(b []byte) error {
+	if r._json != nil {
+		if r._path == "" {
+			bcopy := make([]byte, len(b))
+			copy(bcopy, b)
+
+			r.setJson(bcopy)
+			return nil
+		}
+
+		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		if err != nil {
+			return err
+		}
+		r.setJson(njson)
+		return nil
+	}
+
+	bcopy := make([]byte, len(b))
+	copy(bcopy, b)
+
+	*r = __node[D]{_json: &bcopy}
+	return nil
+}
+
+func (r __node[D]) json() []byte {
+	if r._json == nil {
+		return r.defaultJson()
+	}
+
+	return *r._json
+}
+
+func (r __node[D]) path() string {
+	return r._path
+}
+
+func (r __node[D]) setJson(v []byte) {
+	*r._json = v
+}
+
+func (r *__node[D]) ensureJson() {
+	if r._json != nil {
+		return
+	}
+
+	b := r.json()
+	r._json = &b
+}
+
+func (r __node[D]) result() gjson.Result {
+	if r._path == "" {
+		return gjson.ParseBytes(r.json())
+	}
+	return gjson.GetBytes(r.json(), r.path())
+}
+
+func (r __node[D]) Exists() bool {
+	return r.result().Exists()
+}
+
+func (r __node[D]) Delete() error {
+	res, err := sjson.DeleteBytes(r.json(), r.path())
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+func (r *__node[D]) set(incoming []byte) error {
+	r.ensureJson()
+
+	if r._path == "" {
+		r.setJson(incoming)
+		return nil
+	}
+
+	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	if err != nil {
+		return err
+	}
+	r.setJson(res)
+	return nil
+}
+
+func (r *__node[D]) setArray(incoming []byte) error {
+	param := []byte{'['}
+	param = append(param, r.currentJson()...)
+	param = append(param, ',')
+	param = append(param, incoming...)
+	param = append(param, ']')
+
+	incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+
+	return r.set(incoming)
+}
+
+func (r __node[D]) copy() __node[D] {
+	j := r.currentJson()
+	b := make([]byte, len(j))
+	copy(b, j)
+	return __node[D]{
+		_json: &b,
+	}
+}
+
+func (r __node[D]) defaultJson() []byte {
+	var d D
+	return d.defaultJson()
+}
+
+type AllOf struct {
+	__node[AllOf]
 }
 
 func (r AllOf) Set(v *AllOf) error {
@@ -32,118 +169,35 @@ func (r AllOf) Set(v *AllOf) error {
 func (r *AllOf) GetBilling_address() *AllofDefinitionsAddress {
 	r.ensureJson()
 	return &AllofDefinitionsAddress{
-		_path: pathJoin(r._path, "billing_address"),
-		_json: r._json,
+		__node[AllofDefinitionsAddress]{
+			_path: pathJoin(r._path, "billing_address"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllOf) GetShipping_address() *AllofShipping_address {
 	r.ensureJson()
 	return &AllofShipping_address{
-		_path: pathJoin(r._path, "shipping_address"),
-		_json: r._json,
+		__node[AllofShipping_address]{
+			_path: pathJoin(r._path, "shipping_address"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllOf) defaultJson() []byte {
+func (r AllOf) Copy() *AllOf {
+	return &AllOf{
+		__node: r.copy(),
+	}
+}
+
+func (r AllOf) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllOf) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllOf) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllOf) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllOf) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllOf{_json: &bcopy}
-	return nil
-}
-func (r AllOf) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllOf) path() string {
-	return r._path
-}
-func (r AllOf) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllOf) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllOf) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllOf) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllOf) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllOf) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllOfOneOf struct {
-	_path string
-	_json *[]byte
+	__node[AllOfOneOf]
 }
 
 func (r AllOfOneOf) Set(v *AllOfOneOf) error {
@@ -155,110 +209,25 @@ func (r AllOfOneOf) Set(v *AllOfOneOf) error {
 func (r *AllOfOneOf) GetData() *AllofoneofData {
 	r.ensureJson()
 	return &AllofoneofData{
-		_path: pathJoin(r._path, "data"),
-		_json: r._json,
+		__node[AllofoneofData]{
+			_path: pathJoin(r._path, "data"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllOfOneOf) defaultJson() []byte {
+func (r AllOfOneOf) Copy() *AllOfOneOf {
+	return &AllOfOneOf{
+		__node: r.copy(),
+	}
+}
+
+func (r AllOfOneOf) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllOfOneOf) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllOfOneOf) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllOfOneOf) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllOfOneOf) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllOfOneOf{_json: &bcopy}
-	return nil
-}
-func (r AllOfOneOf) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllOfOneOf) path() string {
-	return r._path
-}
-func (r AllOfOneOf) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllOfOneOf) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllOfOneOf) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllOfOneOf) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllOfOneOf) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllOfOneOf) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofDefinitionsAddress struct {
-	_path string
-	_json *[]byte
+	__node[AllofDefinitionsAddress]
 }
 
 func (r AllofDefinitionsAddress) Set(v *AllofDefinitionsAddress) error {
@@ -270,412 +239,155 @@ func (r AllofDefinitionsAddress) Set(v *AllofDefinitionsAddress) error {
 func (r *AllofDefinitionsAddress) GetCity() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "city"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "city"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofDefinitionsAddress) defaultJson() []byte {
+func (r AllofDefinitionsAddress) Copy() *AllofDefinitionsAddress {
+	return &AllofDefinitionsAddress{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofDefinitionsAddress) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofDefinitionsAddress) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofDefinitionsAddress) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofDefinitionsAddress) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofDefinitionsAddress) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofDefinitionsAddress{_json: &bcopy}
-	return nil
-}
-func (r AllofDefinitionsAddress) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofDefinitionsAddress) path() string {
-	return r._path
-}
-func (r AllofDefinitionsAddress) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofDefinitionsAddress) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofDefinitionsAddress) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofDefinitionsAddress) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofDefinitionsAddress) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofDefinitionsAddress) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofShipping_address struct {
-	_path string
-	_json *[]byte
+	__node[AllofShipping_address]
 }
 
 func (r AllofShipping_address) Set(v *AllofShipping_address) error {
 	incoming := v.currentJson()
 
-	param := []byte{'['}
-	param = append(param, r.currentJson()...)
-	param = append(param, ',')
-	param = append(param, incoming...)
-	param = append(param, ']')
-
-	incoming = []byte(gjson.GetBytes(param, "@join").Raw)
-
-	return r.set(incoming)
+	return r.setArray(incoming)
 }
 
 func (r *AllofShipping_address) GetCity() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "city"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "city"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofShipping_address) GetType() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "type"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "type"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofShipping_address) defaultJson() []byte {
+func (r AllofShipping_address) Copy() *AllofShipping_address {
+	return &AllofShipping_address{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofShipping_address) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofShipping_address) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofShipping_address) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofShipping_address) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofShipping_address) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofShipping_address{_json: &bcopy}
-	return nil
-}
-func (r AllofShipping_address) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofShipping_address) path() string {
-	return r._path
-}
-func (r AllofShipping_address) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofShipping_address) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofShipping_address) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofShipping_address) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofShipping_address) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofShipping_address) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofoneofData struct {
-	_path string
-	_json *[]byte
+	__node[AllofoneofData]
 }
 
 func (r AllofoneofData) Set(v *AllofoneofData) error {
 	incoming := v.currentJson()
 
-	param := []byte{'['}
-	param = append(param, r.currentJson()...)
-	param = append(param, ',')
-	param = append(param, incoming...)
-	param = append(param, ']')
-
-	incoming = []byte(gjson.GetBytes(param, "@join").Raw)
-
-	return r.set(incoming)
+	return r.setArray(incoming)
 }
 
 func (r *AllofoneofData) AsAllOf0OneOf0() *AllofoneofDataAllOf0OneOf0 {
 	r.ensureJson()
 	return &AllofoneofDataAllOf0OneOf0{
-		_path: r._path,
-		_json: r._json,
+		__node[AllofoneofDataAllOf0OneOf0]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofoneofData) AsAllOf0OneOf1() *AllofoneofDataAllOf0OneOf1 {
 	r.ensureJson()
 	return &AllofoneofDataAllOf0OneOf1{
-		_path: r._path,
-		_json: r._json,
+		__node[AllofoneofDataAllOf0OneOf1]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofoneofData) AsAllOf3OneOf1() *AllofoneofDataAllOf3OneOf1 {
 	r.ensureJson()
 	return &AllofoneofDataAllOf3OneOf1{
-		_path: r._path,
-		_json: r._json,
+		__node[AllofoneofDataAllOf3OneOf1]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofoneofData) AsDNestedTitle1() *DNestedTitle1 {
 	r.ensureJson()
 	return &DNestedTitle1{
-		_path: r._path,
-		_json: r._json,
+		__node[DNestedTitle1]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofoneofData) AsNamedOneOf0() *AllofoneofDataAllOf2OneOf0 {
 	r.ensureJson()
 	return &AllofoneofDataAllOf2OneOf0{
-		_path: r._path,
-		_json: r._json,
+		__node[AllofoneofDataAllOf2OneOf0]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofoneofData) AsNamedOneOf1() *AllofoneofDataAllOf2OneOf1 {
 	r.ensureJson()
 	return &AllofoneofDataAllOf2OneOf1{
-		_path: r._path,
-		_json: r._json,
+		__node[AllofoneofDataAllOf2OneOf1]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *AllofoneofData) GetB() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "b"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "b"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofoneofData) defaultJson() []byte {
+func (r AllofoneofData) Copy() *AllofoneofData {
+	return &AllofoneofData{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofData) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofoneofData) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofoneofData) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofoneofData) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofoneofData) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofoneofData{_json: &bcopy}
-	return nil
-}
-func (r AllofoneofData) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofoneofData) path() string {
-	return r._path
-}
-func (r AllofoneofData) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofoneofData) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofoneofData) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofoneofData) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofoneofData) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofoneofData) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofoneofDataAllOf0OneOf0 struct {
-	_path string
-	_json *[]byte
+	__node[AllofoneofDataAllOf0OneOf0]
 }
 
 func (r AllofoneofDataAllOf0OneOf0) Set(v *AllofoneofDataAllOf0OneOf0) error {
@@ -687,110 +399,25 @@ func (r AllofoneofDataAllOf0OneOf0) Set(v *AllofoneofDataAllOf0OneOf0) error {
 func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "a1"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "a1"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofoneofDataAllOf0OneOf0) defaultJson() []byte {
+func (r AllofoneofDataAllOf0OneOf0) Copy() *AllofoneofDataAllOf0OneOf0 {
+	return &AllofoneofDataAllOf0OneOf0{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf0OneOf0) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofoneofDataAllOf0OneOf0) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofoneofDataAllOf0OneOf0) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofoneofDataAllOf0OneOf0) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofoneofDataAllOf0OneOf0) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofoneofDataAllOf0OneOf0{_json: &bcopy}
-	return nil
-}
-func (r AllofoneofDataAllOf0OneOf0) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofoneofDataAllOf0OneOf0) path() string {
-	return r._path
-}
-func (r AllofoneofDataAllOf0OneOf0) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofoneofDataAllOf0OneOf0) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofoneofDataAllOf0OneOf0) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofoneofDataAllOf0OneOf0) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofoneofDataAllOf0OneOf0) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofoneofDataAllOf0OneOf0) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofoneofDataAllOf0OneOf1 struct {
-	_path string
-	_json *[]byte
+	__node[AllofoneofDataAllOf0OneOf1]
 }
 
 func (r AllofoneofDataAllOf0OneOf1) Set(v *AllofoneofDataAllOf0OneOf1) error {
@@ -802,110 +429,25 @@ func (r AllofoneofDataAllOf0OneOf1) Set(v *AllofoneofDataAllOf0OneOf1) error {
 func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "a2"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "a2"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofoneofDataAllOf0OneOf1) defaultJson() []byte {
+func (r AllofoneofDataAllOf0OneOf1) Copy() *AllofoneofDataAllOf0OneOf1 {
+	return &AllofoneofDataAllOf0OneOf1{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf0OneOf1) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofoneofDataAllOf0OneOf1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofoneofDataAllOf0OneOf1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofoneofDataAllOf0OneOf1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofoneofDataAllOf0OneOf1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofoneofDataAllOf0OneOf1{_json: &bcopy}
-	return nil
-}
-func (r AllofoneofDataAllOf0OneOf1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofoneofDataAllOf0OneOf1) path() string {
-	return r._path
-}
-func (r AllofoneofDataAllOf0OneOf1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofoneofDataAllOf0OneOf1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofoneofDataAllOf0OneOf1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofoneofDataAllOf0OneOf1) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofoneofDataAllOf0OneOf1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofoneofDataAllOf0OneOf1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofoneofDataAllOf2OneOf0 struct {
-	_path string
-	_json *[]byte
+	__node[AllofoneofDataAllOf2OneOf0]
 }
 
 func (r AllofoneofDataAllOf2OneOf0) Set(v *AllofoneofDataAllOf2OneOf0) error {
@@ -917,110 +459,25 @@ func (r AllofoneofDataAllOf2OneOf0) Set(v *AllofoneofDataAllOf2OneOf0) error {
 func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "c1"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "c1"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofoneofDataAllOf2OneOf0) defaultJson() []byte {
+func (r AllofoneofDataAllOf2OneOf0) Copy() *AllofoneofDataAllOf2OneOf0 {
+	return &AllofoneofDataAllOf2OneOf0{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf2OneOf0) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofoneofDataAllOf2OneOf0) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofoneofDataAllOf2OneOf0) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofoneofDataAllOf2OneOf0) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofoneofDataAllOf2OneOf0) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofoneofDataAllOf2OneOf0{_json: &bcopy}
-	return nil
-}
-func (r AllofoneofDataAllOf2OneOf0) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofoneofDataAllOf2OneOf0) path() string {
-	return r._path
-}
-func (r AllofoneofDataAllOf2OneOf0) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofoneofDataAllOf2OneOf0) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofoneofDataAllOf2OneOf0) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofoneofDataAllOf2OneOf0) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofoneofDataAllOf2OneOf0) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofoneofDataAllOf2OneOf0) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofoneofDataAllOf2OneOf1 struct {
-	_path string
-	_json *[]byte
+	__node[AllofoneofDataAllOf2OneOf1]
 }
 
 func (r AllofoneofDataAllOf2OneOf1) Set(v *AllofoneofDataAllOf2OneOf1) error {
@@ -1032,110 +489,25 @@ func (r AllofoneofDataAllOf2OneOf1) Set(v *AllofoneofDataAllOf2OneOf1) error {
 func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "c2"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "c2"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofoneofDataAllOf2OneOf1) defaultJson() []byte {
+func (r AllofoneofDataAllOf2OneOf1) Copy() *AllofoneofDataAllOf2OneOf1 {
+	return &AllofoneofDataAllOf2OneOf1{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf2OneOf1) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofoneofDataAllOf2OneOf1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofoneofDataAllOf2OneOf1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofoneofDataAllOf2OneOf1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofoneofDataAllOf2OneOf1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofoneofDataAllOf2OneOf1{_json: &bcopy}
-	return nil
-}
-func (r AllofoneofDataAllOf2OneOf1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofoneofDataAllOf2OneOf1) path() string {
-	return r._path
-}
-func (r AllofoneofDataAllOf2OneOf1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofoneofDataAllOf2OneOf1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofoneofDataAllOf2OneOf1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofoneofDataAllOf2OneOf1) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofoneofDataAllOf2OneOf1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofoneofDataAllOf2OneOf1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type AllofoneofDataAllOf3OneOf1 struct {
-	_path string
-	_json *[]byte
+	__node[AllofoneofDataAllOf3OneOf1]
 }
 
 func (r AllofoneofDataAllOf3OneOf1) Set(v *AllofoneofDataAllOf3OneOf1) error {
@@ -1147,110 +519,25 @@ func (r AllofoneofDataAllOf3OneOf1) Set(v *AllofoneofDataAllOf3OneOf1) error {
 func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "d2"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "d2"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *AllofoneofDataAllOf3OneOf1) defaultJson() []byte {
+func (r AllofoneofDataAllOf3OneOf1) Copy() *AllofoneofDataAllOf3OneOf1 {
+	return &AllofoneofDataAllOf3OneOf1{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf3OneOf1) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r AllofoneofDataAllOf3OneOf1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r AllofoneofDataAllOf3OneOf1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r AllofoneofDataAllOf3OneOf1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *AllofoneofDataAllOf3OneOf1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = AllofoneofDataAllOf3OneOf1{_json: &bcopy}
-	return nil
-}
-func (r AllofoneofDataAllOf3OneOf1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r AllofoneofDataAllOf3OneOf1) path() string {
-	return r._path
-}
-func (r AllofoneofDataAllOf3OneOf1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *AllofoneofDataAllOf3OneOf1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r AllofoneofDataAllOf3OneOf1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r AllofoneofDataAllOf3OneOf1) Exists() bool {
-	return r.result().Exists()
-}
-func (r AllofoneofDataAllOf3OneOf1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *AllofoneofDataAllOf3OneOf1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArrayArray struct {
-	_path string
-	_json *[]byte
+	__node[ArrayArray]
 }
 
 func (r ArrayArray) Set(v *ArrayArray) error {
@@ -1262,118 +549,35 @@ func (r ArrayArray) Set(v *ArrayArray) error {
 func (r *ArrayArray) GetTopfield1() *ArrayTopfield1 {
 	r.ensureJson()
 	return &ArrayTopfield1{
-		_path: pathJoin(r._path, "topfield1"),
-		_json: r._json,
+		__node[ArrayTopfield1]{
+			_path: pathJoin(r._path, "topfield1"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
 	r.ensureJson()
 	return &ArrayTopfield2{
-		_path: pathJoin(r._path, "topfield2"),
-		_json: r._json,
+		__node[ArrayTopfield2]{
+			_path: pathJoin(r._path, "topfield2"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *ArrayArray) defaultJson() []byte {
+func (r ArrayArray) Copy() *ArrayArray {
+	return &ArrayArray{
+		__node: r.copy(),
+	}
+}
+
+func (r ArrayArray) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r ArrayArray) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArrayArray) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArrayArray) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArrayArray) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArrayArray{_json: &bcopy}
-	return nil
-}
-func (r ArrayArray) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArrayArray) path() string {
-	return r._path
-}
-func (r ArrayArray) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArrayArray) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArrayArray) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArrayArray) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArrayArray) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArrayArray) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArrayDefinitionsDef1 struct {
-	_path string
-	_json *[]byte
+	__node[ArrayDefinitionsDef1]
 }
 
 func (r ArrayDefinitionsDef1) Set(v *ArrayDefinitionsDef1) error {
@@ -1385,118 +589,35 @@ func (r ArrayDefinitionsDef1) Set(v *ArrayDefinitionsDef1) error {
 func (r *ArrayDefinitionsDef1) GetField1() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "field1"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "field1"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *ArrayDefinitionsDef1) GetField2() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "field2"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "field2"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *ArrayDefinitionsDef1) defaultJson() []byte {
+func (r ArrayDefinitionsDef1) Copy() *ArrayDefinitionsDef1 {
+	return &ArrayDefinitionsDef1{
+		__node: r.copy(),
+	}
+}
+
+func (r ArrayDefinitionsDef1) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r ArrayDefinitionsDef1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArrayDefinitionsDef1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArrayDefinitionsDef1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArrayDefinitionsDef1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArrayDefinitionsDef1{_json: &bcopy}
-	return nil
-}
-func (r ArrayDefinitionsDef1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArrayDefinitionsDef1) path() string {
-	return r._path
-}
-func (r ArrayDefinitionsDef1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArrayDefinitionsDef1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArrayDefinitionsDef1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArrayDefinitionsDef1) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArrayDefinitionsDef1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArrayDefinitionsDef1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArrayTopfield1 struct {
-	_path string
-	_json *[]byte
+	__node[ArrayTopfield1]
 }
 
 func (r ArrayTopfield1) Set(v *ArrayTopfield1) error {
@@ -1506,14 +627,17 @@ func (r ArrayTopfield1) Set(v *ArrayTopfield1) error {
 }
 
 func (r *ArrayTopfield1) Append(v *ArrayDefinitionsDef1) error {
+	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
 	r.ensureJson()
 	return &ArrayDefinitionsDef1{
-		_path: pathJoin(r._path, strconv.Itoa(i)),
-		_json: r._json,
+		__node[ArrayDefinitionsDef1]{
+			_path: pathJoin(r._path, strconv.Itoa(i)),
+			_json: r._json,
+		},
 	}
 }
 
@@ -1529,105 +653,18 @@ func (r ArrayTopfield1) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r *ArrayTopfield1) defaultJson() []byte {
+func (r ArrayTopfield1) Copy() *ArrayTopfield1 {
+	return &ArrayTopfield1{
+		__node: r.copy(),
+	}
+}
+
+func (r ArrayTopfield1) defaultJson() []byte {
 	return []byte("[]")
 }
 
-func (r ArrayTopfield1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArrayTopfield1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArrayTopfield1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArrayTopfield1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArrayTopfield1{_json: &bcopy}
-	return nil
-}
-func (r ArrayTopfield1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArrayTopfield1) path() string {
-	return r._path
-}
-func (r ArrayTopfield1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArrayTopfield1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArrayTopfield1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArrayTopfield1) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArrayTopfield1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArrayTopfield1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArrayTopfield2 struct {
-	_path string
-	_json *[]byte
+	__node[ArrayTopfield2]
 }
 
 func (r ArrayTopfield2) Value() []string {
@@ -1637,14 +674,17 @@ func (r ArrayTopfield2) Value() []string {
 	return v
 }
 func (r *ArrayTopfield2) Append(v string) error {
+	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArrayTopfield2) At(i int) *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, strconv.Itoa(i)),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, strconv.Itoa(i)),
+			_json: r._json,
+		},
 	}
 }
 
@@ -1669,105 +709,18 @@ func (r ArrayTopfield2) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r *ArrayTopfield2) defaultJson() []byte {
+func (r ArrayTopfield2) Copy() *ArrayTopfield2 {
+	return &ArrayTopfield2{
+		__node: r.copy(),
+	}
+}
+
+func (r ArrayTopfield2) defaultJson() []byte {
 	return []byte("[]")
 }
 
-func (r ArrayTopfield2) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArrayTopfield2) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArrayTopfield2) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArrayTopfield2) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArrayTopfield2{_json: &bcopy}
-	return nil
-}
-func (r ArrayTopfield2) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArrayTopfield2) path() string {
-	return r._path
-}
-func (r ArrayTopfield2) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArrayTopfield2) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArrayTopfield2) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArrayTopfield2) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArrayTopfield2) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArrayTopfield2) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArraysSchemaArraysSchema struct {
-	_path string
-	_json *[]byte
+	__node[ArraysSchemaArraysSchema]
 }
 
 func (r ArraysSchemaArraysSchema) Set(v *ArraysSchemaArraysSchema) error {
@@ -1779,118 +732,35 @@ func (r ArraysSchemaArraysSchema) Set(v *ArraysSchemaArraysSchema) error {
 func (r *ArraysSchemaArraysSchema) GetFruits() *ArraysSchemaFruits {
 	r.ensureJson()
 	return &ArraysSchemaFruits{
-		_path: pathJoin(r._path, "fruits"),
-		_json: r._json,
+		__node[ArraysSchemaFruits]{
+			_path: pathJoin(r._path, "fruits"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
 	r.ensureJson()
 	return &ArraysSchemaVegetables{
-		_path: pathJoin(r._path, "vegetables"),
-		_json: r._json,
+		__node[ArraysSchemaVegetables]{
+			_path: pathJoin(r._path, "vegetables"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *ArraysSchemaArraysSchema) defaultJson() []byte {
+func (r ArraysSchemaArraysSchema) Copy() *ArraysSchemaArraysSchema {
+	return &ArraysSchemaArraysSchema{
+		__node: r.copy(),
+	}
+}
+
+func (r ArraysSchemaArraysSchema) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r ArraysSchemaArraysSchema) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArraysSchemaArraysSchema) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArraysSchemaArraysSchema) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArraysSchemaArraysSchema) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArraysSchemaArraysSchema{_json: &bcopy}
-	return nil
-}
-func (r ArraysSchemaArraysSchema) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArraysSchemaArraysSchema) path() string {
-	return r._path
-}
-func (r ArraysSchemaArraysSchema) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArraysSchemaArraysSchema) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArraysSchemaArraysSchema) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArraysSchemaArraysSchema) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArraysSchemaArraysSchema) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArraysSchemaArraysSchema) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArraysSchemaDefsVeggie struct {
-	_path string
-	_json *[]byte
+	__node[ArraysSchemaDefsVeggie]
 }
 
 func (r ArraysSchemaDefsVeggie) Set(v *ArraysSchemaDefsVeggie) error {
@@ -1902,118 +772,35 @@ func (r ArraysSchemaDefsVeggie) Set(v *ArraysSchemaDefsVeggie) error {
 func (r *ArraysSchemaDefsVeggie) GetVeggieLike() *Bool {
 	r.ensureJson()
 	return &Bool{
-		_path: pathJoin(r._path, "veggieLike"),
-		_json: r._json,
+		__node[Bool]{
+			_path: pathJoin(r._path, "veggieLike"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "veggieName"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "veggieName"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *ArraysSchemaDefsVeggie) defaultJson() []byte {
+func (r ArraysSchemaDefsVeggie) Copy() *ArraysSchemaDefsVeggie {
+	return &ArraysSchemaDefsVeggie{
+		__node: r.copy(),
+	}
+}
+
+func (r ArraysSchemaDefsVeggie) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r ArraysSchemaDefsVeggie) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArraysSchemaDefsVeggie) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArraysSchemaDefsVeggie) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArraysSchemaDefsVeggie) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArraysSchemaDefsVeggie{_json: &bcopy}
-	return nil
-}
-func (r ArraysSchemaDefsVeggie) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArraysSchemaDefsVeggie) path() string {
-	return r._path
-}
-func (r ArraysSchemaDefsVeggie) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArraysSchemaDefsVeggie) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArraysSchemaDefsVeggie) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArraysSchemaDefsVeggie) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArraysSchemaDefsVeggie) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArraysSchemaDefsVeggie) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArraysSchemaFruits struct {
-	_path string
-	_json *[]byte
+	__node[ArraysSchemaFruits]
 }
 
 func (r ArraysSchemaFruits) Value() []string {
@@ -2023,14 +810,17 @@ func (r ArraysSchemaFruits) Value() []string {
 	return v
 }
 func (r *ArraysSchemaFruits) Append(v string) error {
+	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArraysSchemaFruits) At(i int) *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, strconv.Itoa(i)),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, strconv.Itoa(i)),
+			_json: r._json,
+		},
 	}
 }
 
@@ -2055,105 +845,18 @@ func (r ArraysSchemaFruits) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r *ArraysSchemaFruits) defaultJson() []byte {
+func (r ArraysSchemaFruits) Copy() *ArraysSchemaFruits {
+	return &ArraysSchemaFruits{
+		__node: r.copy(),
+	}
+}
+
+func (r ArraysSchemaFruits) defaultJson() []byte {
 	return []byte("[]")
 }
 
-func (r ArraysSchemaFruits) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArraysSchemaFruits) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArraysSchemaFruits) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArraysSchemaFruits) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArraysSchemaFruits{_json: &bcopy}
-	return nil
-}
-func (r ArraysSchemaFruits) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArraysSchemaFruits) path() string {
-	return r._path
-}
-func (r ArraysSchemaFruits) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArraysSchemaFruits) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArraysSchemaFruits) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArraysSchemaFruits) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArraysSchemaFruits) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArraysSchemaFruits) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type ArraysSchemaVegetables struct {
-	_path string
-	_json *[]byte
+	__node[ArraysSchemaVegetables]
 }
 
 func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
@@ -2163,14 +866,17 @@ func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
 }
 
 func (r *ArraysSchemaVegetables) Append(v *ArraysSchemaDefsVeggie) error {
+	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
 	r.ensureJson()
 	return &ArraysSchemaDefsVeggie{
-		_path: pathJoin(r._path, strconv.Itoa(i)),
-		_json: r._json,
+		__node[ArraysSchemaDefsVeggie]{
+			_path: pathJoin(r._path, strconv.Itoa(i)),
+			_json: r._json,
+		},
 	}
 }
 
@@ -2186,105 +892,18 @@ func (r ArraysSchemaVegetables) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r *ArraysSchemaVegetables) defaultJson() []byte {
+func (r ArraysSchemaVegetables) Copy() *ArraysSchemaVegetables {
+	return &ArraysSchemaVegetables{
+		__node: r.copy(),
+	}
+}
+
+func (r ArraysSchemaVegetables) defaultJson() []byte {
 	return []byte("[]")
 }
 
-func (r ArraysSchemaVegetables) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r ArraysSchemaVegetables) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r ArraysSchemaVegetables) JSON() []byte {
-	return r.currentJson()
-}
-func (r *ArraysSchemaVegetables) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = ArraysSchemaVegetables{_json: &bcopy}
-	return nil
-}
-func (r ArraysSchemaVegetables) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r ArraysSchemaVegetables) path() string {
-	return r._path
-}
-func (r ArraysSchemaVegetables) setJson(v []byte) {
-	*r._json = v
-}
-func (r *ArraysSchemaVegetables) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r ArraysSchemaVegetables) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r ArraysSchemaVegetables) Exists() bool {
-	return r.result().Exists()
-}
-func (r ArraysSchemaVegetables) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *ArraysSchemaVegetables) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type Bool struct {
-	_path string
-	_json *[]byte
+	__node[Bool]
 }
 
 func (r Bool) Value() bool {
@@ -2300,105 +919,18 @@ func (r *Bool) Set(v bool) error {
 	return r.set(b)
 }
 
-func (r *Bool) defaultJson() []byte {
+func (r Bool) Copy() *Bool {
+	return &Bool{
+		__node: r.copy(),
+	}
+}
+
+func (r Bool) defaultJson() []byte {
 	return []byte("")
 }
 
-func (r Bool) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r Bool) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r Bool) JSON() []byte {
-	return r.currentJson()
-}
-func (r *Bool) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = Bool{_json: &bcopy}
-	return nil
-}
-func (r Bool) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r Bool) path() string {
-	return r._path
-}
-func (r Bool) setJson(v []byte) {
-	*r._json = v
-}
-func (r *Bool) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r Bool) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r Bool) Exists() bool {
-	return r.result().Exists()
-}
-func (r Bool) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *Bool) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type DNestedTitle1 struct {
-	_path string
-	_json *[]byte
+	__node[DNestedTitle1]
 }
 
 func (r DNestedTitle1) Set(v *DNestedTitle1) error {
@@ -2410,110 +942,25 @@ func (r DNestedTitle1) Set(v *DNestedTitle1) error {
 func (r *DNestedTitle1) GetD1() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "d1"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "d1"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *DNestedTitle1) defaultJson() []byte {
+func (r DNestedTitle1) Copy() *DNestedTitle1 {
+	return &DNestedTitle1{
+		__node: r.copy(),
+	}
+}
+
+func (r DNestedTitle1) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r DNestedTitle1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r DNestedTitle1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r DNestedTitle1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *DNestedTitle1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = DNestedTitle1{_json: &bcopy}
-	return nil
-}
-func (r DNestedTitle1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r DNestedTitle1) path() string {
-	return r._path
-}
-func (r DNestedTitle1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *DNestedTitle1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r DNestedTitle1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r DNestedTitle1) Exists() bool {
-	return r.result().Exists()
-}
-func (r DNestedTitle1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *DNestedTitle1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type Int64 struct {
-	_path string
-	_json *[]byte
+	__node[Int64]
 }
 
 func (r Int64) Value() int64 {
@@ -2529,105 +976,18 @@ func (r *Int64) Set(v int64) error {
 	return r.set(b)
 }
 
-func (r *Int64) defaultJson() []byte {
+func (r Int64) Copy() *Int64 {
+	return &Int64{
+		__node: r.copy(),
+	}
+}
+
+func (r Int64) defaultJson() []byte {
 	return []byte("")
 }
 
-func (r Int64) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r Int64) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r Int64) JSON() []byte {
-	return r.currentJson()
-}
-func (r *Int64) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = Int64{_json: &bcopy}
-	return nil
-}
-func (r Int64) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r Int64) path() string {
-	return r._path
-}
-func (r Int64) setJson(v []byte) {
-	*r._json = v
-}
-func (r *Int64) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r Int64) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r Int64) Exists() bool {
-	return r.result().Exists()
-}
-func (r Int64) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *Int64) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type NestedarraysField1 struct {
-	_path string
-	_json *[]byte
+	__node[NestedarraysField1]
 }
 
 func (r NestedarraysField1) Set(v *NestedarraysField1) error {
@@ -2637,14 +997,17 @@ func (r NestedarraysField1) Set(v *NestedarraysField1) error {
 }
 
 func (r *NestedarraysField1) Append(v *NestedarraysField1Items) error {
+	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *NestedarraysField1) At(i int) *NestedarraysField1Items {
 	r.ensureJson()
 	return &NestedarraysField1Items{
-		_path: pathJoin(r._path, strconv.Itoa(i)),
-		_json: r._json,
+		__node[NestedarraysField1Items]{
+			_path: pathJoin(r._path, strconv.Itoa(i)),
+			_json: r._json,
+		},
 	}
 }
 
@@ -2660,105 +1023,18 @@ func (r NestedarraysField1) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r *NestedarraysField1) defaultJson() []byte {
+func (r NestedarraysField1) Copy() *NestedarraysField1 {
+	return &NestedarraysField1{
+		__node: r.copy(),
+	}
+}
+
+func (r NestedarraysField1) defaultJson() []byte {
 	return []byte("[]")
 }
 
-func (r NestedarraysField1) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r NestedarraysField1) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r NestedarraysField1) JSON() []byte {
-	return r.currentJson()
-}
-func (r *NestedarraysField1) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = NestedarraysField1{_json: &bcopy}
-	return nil
-}
-func (r NestedarraysField1) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r NestedarraysField1) path() string {
-	return r._path
-}
-func (r NestedarraysField1) setJson(v []byte) {
-	*r._json = v
-}
-func (r *NestedarraysField1) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r NestedarraysField1) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r NestedarraysField1) Exists() bool {
-	return r.result().Exists()
-}
-func (r NestedarraysField1) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *NestedarraysField1) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type NestedarraysField1Items struct {
-	_path string
-	_json *[]byte
+	__node[NestedarraysField1Items]
 }
 
 func (r NestedarraysField1Items) Set(v *NestedarraysField1Items) error {
@@ -2770,110 +1046,25 @@ func (r NestedarraysField1Items) Set(v *NestedarraysField1Items) error {
 func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
 	r.ensureJson()
 	return &NestedarraysField1ItemsField2{
-		_path: pathJoin(r._path, "field2"),
-		_json: r._json,
+		__node[NestedarraysField1ItemsField2]{
+			_path: pathJoin(r._path, "field2"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *NestedarraysField1Items) defaultJson() []byte {
+func (r NestedarraysField1Items) Copy() *NestedarraysField1Items {
+	return &NestedarraysField1Items{
+		__node: r.copy(),
+	}
+}
+
+func (r NestedarraysField1Items) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r NestedarraysField1Items) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r NestedarraysField1Items) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r NestedarraysField1Items) JSON() []byte {
-	return r.currentJson()
-}
-func (r *NestedarraysField1Items) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = NestedarraysField1Items{_json: &bcopy}
-	return nil
-}
-func (r NestedarraysField1Items) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r NestedarraysField1Items) path() string {
-	return r._path
-}
-func (r NestedarraysField1Items) setJson(v []byte) {
-	*r._json = v
-}
-func (r *NestedarraysField1Items) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r NestedarraysField1Items) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r NestedarraysField1Items) Exists() bool {
-	return r.result().Exists()
-}
-func (r NestedarraysField1Items) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *NestedarraysField1Items) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type NestedarraysField1ItemsField2 struct {
-	_path string
-	_json *[]byte
+	__node[NestedarraysField1ItemsField2]
 }
 
 func (r NestedarraysField1ItemsField2) Set(v *NestedarraysField1ItemsField2) error {
@@ -2883,14 +1074,17 @@ func (r NestedarraysField1ItemsField2) Set(v *NestedarraysField1ItemsField2) err
 }
 
 func (r *NestedarraysField1ItemsField2) Append(v *SomeTitle) error {
+	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *NestedarraysField1ItemsField2) At(i int) *SomeTitle {
 	r.ensureJson()
 	return &SomeTitle{
-		_path: pathJoin(r._path, strconv.Itoa(i)),
-		_json: r._json,
+		__node[SomeTitle]{
+			_path: pathJoin(r._path, strconv.Itoa(i)),
+			_json: r._json,
+		},
 	}
 }
 
@@ -2906,105 +1100,18 @@ func (r NestedarraysField1ItemsField2) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r *NestedarraysField1ItemsField2) defaultJson() []byte {
+func (r NestedarraysField1ItemsField2) Copy() *NestedarraysField1ItemsField2 {
+	return &NestedarraysField1ItemsField2{
+		__node: r.copy(),
+	}
+}
+
+func (r NestedarraysField1ItemsField2) defaultJson() []byte {
 	return []byte("[]")
 }
 
-func (r NestedarraysField1ItemsField2) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r NestedarraysField1ItemsField2) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r NestedarraysField1ItemsField2) JSON() []byte {
-	return r.currentJson()
-}
-func (r *NestedarraysField1ItemsField2) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = NestedarraysField1ItemsField2{_json: &bcopy}
-	return nil
-}
-func (r NestedarraysField1ItemsField2) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r NestedarraysField1ItemsField2) path() string {
-	return r._path
-}
-func (r NestedarraysField1ItemsField2) setJson(v []byte) {
-	*r._json = v
-}
-func (r *NestedarraysField1ItemsField2) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r NestedarraysField1ItemsField2) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r NestedarraysField1ItemsField2) Exists() bool {
-	return r.result().Exists()
-}
-func (r NestedarraysField1ItemsField2) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *NestedarraysField1ItemsField2) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type NestedarraysNestedarrays struct {
-	_path string
-	_json *[]byte
+	__node[NestedarraysNestedarrays]
 }
 
 func (r NestedarraysNestedarrays) Set(v *NestedarraysNestedarrays) error {
@@ -3016,110 +1123,25 @@ func (r NestedarraysNestedarrays) Set(v *NestedarraysNestedarrays) error {
 func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
 	r.ensureJson()
 	return &NestedarraysField1{
-		_path: pathJoin(r._path, "field1"),
-		_json: r._json,
+		__node[NestedarraysField1]{
+			_path: pathJoin(r._path, "field1"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *NestedarraysNestedarrays) defaultJson() []byte {
+func (r NestedarraysNestedarrays) Copy() *NestedarraysNestedarrays {
+	return &NestedarraysNestedarrays{
+		__node: r.copy(),
+	}
+}
+
+func (r NestedarraysNestedarrays) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r NestedarraysNestedarrays) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r NestedarraysNestedarrays) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r NestedarraysNestedarrays) JSON() []byte {
-	return r.currentJson()
-}
-func (r *NestedarraysNestedarrays) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = NestedarraysNestedarrays{_json: &bcopy}
-	return nil
-}
-func (r NestedarraysNestedarrays) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r NestedarraysNestedarrays) path() string {
-	return r._path
-}
-func (r NestedarraysNestedarrays) setJson(v []byte) {
-	*r._json = v
-}
-func (r *NestedarraysNestedarrays) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r NestedarraysNestedarrays) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r NestedarraysNestedarrays) Exists() bool {
-	return r.result().Exists()
-}
-func (r NestedarraysNestedarrays) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *NestedarraysNestedarrays) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type OneOf struct {
-	_path string
-	_json *[]byte
+	__node[OneOf]
 }
 
 func (r OneOf) Set(v *OneOf) error {
@@ -3131,110 +1153,25 @@ func (r OneOf) Set(v *OneOf) error {
 func (r *OneOf) GetData() *OneofData {
 	r.ensureJson()
 	return &OneofData{
-		_path: pathJoin(r._path, "data"),
-		_json: r._json,
+		__node[OneofData]{
+			_path: pathJoin(r._path, "data"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *OneOf) defaultJson() []byte {
+func (r OneOf) Copy() *OneOf {
+	return &OneOf{
+		__node: r.copy(),
+	}
+}
+
+func (r OneOf) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r OneOf) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r OneOf) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r OneOf) JSON() []byte {
-	return r.currentJson()
-}
-func (r *OneOf) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = OneOf{_json: &bcopy}
-	return nil
-}
-func (r OneOf) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r OneOf) path() string {
-	return r._path
-}
-func (r OneOf) setJson(v []byte) {
-	*r._json = v
-}
-func (r *OneOf) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r OneOf) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r OneOf) Exists() bool {
-	return r.result().Exists()
-}
-func (r OneOf) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *OneOf) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type OneOfRootObj struct {
-	_path string
-	_json *[]byte
+	__node[OneOfRootObj]
 }
 
 func (r OneOfRootObj) Set(v *OneOfRootObj) error {
@@ -3246,118 +1183,35 @@ func (r OneOfRootObj) Set(v *OneOfRootObj) error {
 func (r *OneOfRootObj) AsPerson() *Person {
 	r.ensureJson()
 	return &Person{
-		_path: r._path,
-		_json: r._json,
+		__node[Person]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *OneOfRootObj) AsVehicle() *Vehicle {
 	r.ensureJson()
 	return &Vehicle{
-		_path: r._path,
-		_json: r._json,
+		__node[Vehicle]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
-func (r *OneOfRootObj) defaultJson() []byte {
+func (r OneOfRootObj) Copy() *OneOfRootObj {
+	return &OneOfRootObj{
+		__node: r.copy(),
+	}
+}
+
+func (r OneOfRootObj) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r OneOfRootObj) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r OneOfRootObj) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r OneOfRootObj) JSON() []byte {
-	return r.currentJson()
-}
-func (r *OneOfRootObj) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = OneOfRootObj{_json: &bcopy}
-	return nil
-}
-func (r OneOfRootObj) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r OneOfRootObj) path() string {
-	return r._path
-}
-func (r OneOfRootObj) setJson(v []byte) {
-	*r._json = v
-}
-func (r *OneOfRootObj) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r OneOfRootObj) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r OneOfRootObj) Exists() bool {
-	return r.result().Exists()
-}
-func (r OneOfRootObj) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *OneOfRootObj) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type OneofData struct {
-	_path string
-	_json *[]byte
+	__node[OneofData]
 }
 
 func (r OneofData) Set(v *OneofData) error {
@@ -3369,118 +1223,35 @@ func (r OneofData) Set(v *OneofData) error {
 func (r *OneofData) AsPerson() *Person {
 	r.ensureJson()
 	return &Person{
-		_path: r._path,
-		_json: r._json,
+		__node[Person]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
 func (r *OneofData) AsVehicle() *Vehicle {
 	r.ensureJson()
 	return &Vehicle{
-		_path: r._path,
-		_json: r._json,
+		__node[Vehicle]{
+			_path: r._path,
+			_json: r._json,
+		},
 	}
 }
 
-func (r *OneofData) defaultJson() []byte {
+func (r OneofData) Copy() *OneofData {
+	return &OneofData{
+		__node: r.copy(),
+	}
+}
+
+func (r OneofData) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r OneofData) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r OneofData) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r OneofData) JSON() []byte {
-	return r.currentJson()
-}
-func (r *OneofData) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = OneofData{_json: &bcopy}
-	return nil
-}
-func (r OneofData) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r OneofData) path() string {
-	return r._path
-}
-func (r OneofData) setJson(v []byte) {
-	*r._json = v
-}
-func (r *OneofData) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r OneofData) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r OneofData) Exists() bool {
-	return r.result().Exists()
-}
-func (r OneofData) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *OneofData) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type Person struct {
-	_path string
-	_json *[]byte
+	__node[Person]
 }
 
 func (r Person) Set(v *Person) error {
@@ -3492,126 +1263,45 @@ func (r Person) Set(v *Person) error {
 func (r *Person) GetFirstName() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "firstName"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "firstName"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *Person) GetLastName() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "lastName"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "lastName"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *Person) GetSport() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "sport"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "sport"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *Person) defaultJson() []byte {
+func (r Person) Copy() *Person {
+	return &Person{
+		__node: r.copy(),
+	}
+}
+
+func (r Person) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r Person) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r Person) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r Person) JSON() []byte {
-	return r.currentJson()
-}
-func (r *Person) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = Person{_json: &bcopy}
-	return nil
-}
-func (r Person) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r Person) path() string {
-	return r._path
-}
-func (r Person) setJson(v []byte) {
-	*r._json = v
-}
-func (r *Person) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r Person) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r Person) Exists() bool {
-	return r.result().Exists()
-}
-func (r Person) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *Person) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type SomeTitle struct {
-	_path string
-	_json *[]byte
+	__node[SomeTitle]
 }
 
 func (r SomeTitle) Set(v *SomeTitle) error {
@@ -3623,110 +1313,25 @@ func (r SomeTitle) Set(v *SomeTitle) error {
 func (r *SomeTitle) GetField3() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "field3"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "field3"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *SomeTitle) defaultJson() []byte {
+func (r SomeTitle) Copy() *SomeTitle {
+	return &SomeTitle{
+		__node: r.copy(),
+	}
+}
+
+func (r SomeTitle) defaultJson() []byte {
 	return []byte("{}")
 }
 
-func (r SomeTitle) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r SomeTitle) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r SomeTitle) JSON() []byte {
-	return r.currentJson()
-}
-func (r *SomeTitle) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = SomeTitle{_json: &bcopy}
-	return nil
-}
-func (r SomeTitle) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r SomeTitle) path() string {
-	return r._path
-}
-func (r SomeTitle) setJson(v []byte) {
-	*r._json = v
-}
-func (r *SomeTitle) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r SomeTitle) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r SomeTitle) Exists() bool {
-	return r.result().Exists()
-}
-func (r SomeTitle) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *SomeTitle) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type String struct {
-	_path string
-	_json *[]byte
+	__node[String]
 }
 
 func (r String) Value() string {
@@ -3742,105 +1347,18 @@ func (r *String) Set(v string) error {
 	return r.set(b)
 }
 
-func (r *String) defaultJson() []byte {
+func (r String) Copy() *String {
+	return &String{
+		__node: r.copy(),
+	}
+}
+
+func (r String) defaultJson() []byte {
 	return []byte("")
 }
 
-func (r String) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r String) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r String) JSON() []byte {
-	return r.currentJson()
-}
-func (r *String) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = String{_json: &bcopy}
-	return nil
-}
-func (r String) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r String) path() string {
-	return r._path
-}
-func (r String) setJson(v []byte) {
-	*r._json = v
-}
-func (r *String) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r String) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r String) Exists() bool {
-	return r.result().Exists()
-}
-func (r String) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *String) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-
 type Vehicle struct {
-	_path string
-	_json *[]byte
+	__node[Vehicle]
 }
 
 func (r Vehicle) Set(v *Vehicle) error {
@@ -3852,111 +1370,29 @@ func (r Vehicle) Set(v *Vehicle) error {
 func (r *Vehicle) GetBrand() *String {
 	r.ensureJson()
 	return &String{
-		_path: pathJoin(r._path, "brand"),
-		_json: r._json,
+		__node[String]{
+			_path: pathJoin(r._path, "brand"),
+			_json: r._json,
+		},
 	}
 }
 
 func (r *Vehicle) GetPrice() *Int64 {
 	r.ensureJson()
 	return &Int64{
-		_path: pathJoin(r._path, "price"),
-		_json: r._json,
+		__node[Int64]{
+			_path: pathJoin(r._path, "price"),
+			_json: r._json,
+		},
 	}
 }
 
-func (r *Vehicle) defaultJson() []byte {
+func (r Vehicle) Copy() *Vehicle {
+	return &Vehicle{
+		__node: r.copy(),
+	}
+}
+
+func (r Vehicle) defaultJson() []byte {
 	return []byte("{}")
-}
-
-func (r Vehicle) currentJson() []byte {
-	if r._path == "" {
-		return r.json()
-	}
-
-	res := r.result()
-	return []byte(res.Raw)
-}
-func (r Vehicle) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
-}
-func (r Vehicle) JSON() []byte {
-	return r.currentJson()
-}
-func (r *Vehicle) UnmarshalJSON(b []byte) error {
-	if r._json != nil {
-		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
-			return nil
-		}
-
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-		if err != nil {
-			return err
-		}
-		r.setJson(njson)
-		return nil
-	}
-
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = Vehicle{_json: &bcopy}
-	return nil
-}
-func (r Vehicle) json() []byte {
-	if r._json == nil {
-		return r.defaultJson()
-	}
-
-	return *r._json
-}
-func (r Vehicle) path() string {
-	return r._path
-}
-func (r Vehicle) setJson(v []byte) {
-	*r._json = v
-}
-func (r *Vehicle) ensureJson() {
-	if r._json != nil {
-		return
-	}
-
-	b := r.json()
-	r._json = &b
-}
-func (r Vehicle) result() gjson.Result {
-	if r._path == "" {
-		return gjson.ParseBytes(r.json())
-	}
-	return gjson.GetBytes(r.json(), r.path())
-}
-func (r Vehicle) Exists() bool {
-	return r.result().Exists()
-}
-func (r Vehicle) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
-}
-func (r *Vehicle) set(incoming []byte) error {
-	r.ensureJson()
-
-	if r._path == "" {
-		r.setJson(incoming)
-		return nil
-	}
-
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-	if err != nil {
-		return err
-	}
-	r.setJson(res)
-	return nil
 }

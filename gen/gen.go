@@ -1,6 +1,7 @@
 package gen
 
 import (
+	_ "embed"
 	"errors"
 	"fmt"
 	"github.com/santhosh-tekuri/jsonschema/v5"
@@ -16,7 +17,6 @@ import (
 
 type structType struct {
 	name    string
-	fields  []StructField
 	methods []string
 
 	asGetters map[string]struct{}
@@ -35,108 +35,19 @@ func (s *structType) MakeStore(typ, defaultJson string) {
 }
 
 func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
-	s.AddField(StructField{
-		Name: "_path",
-		Type: "string",
-	})
-	s.AddField(StructField{
-		Name: "_json",
-		Type: "*[]byte",
-	})
+	s.methods = append(s.methods, fmt.Sprintf(`
+	func (r %[1]v) Copy() *%[1]v {
+			return &%[1]v{ 
+				__node: r.copy(),
+			}
+	}
+	`, s.name, strconv.Quote(defaultJson)))
 
 	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r %[1]v) currentJson() []byte {
-		if r._path == "" {
-			return r.json()
-		}
-
-		res := r.result()
-		return []byte(res.Raw)
+	func (r %v) defaultJson() []byte {
+		return []byte("%v")
 	}
-	func (r %[1]v) MarshalJSON() ([]byte, error) {
-		return r.currentJson(), nil
-	}
-	func (r %[1]v) JSON() []byte {
-		return r.currentJson()
-	}
-	func (r *%[1]v) UnmarshalJSON(b []byte) error {
-		if r._json != nil {
-			if r._path == "" {
-				bcopy := make([]byte, len(b))
-				copy(bcopy, b)
-
-				r.setJson(bcopy)
-				return nil
-			}
-
-			njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
-			if err != nil {
-				return err
-			}
-			r.setJson(njson)
-			return nil
-		}
-
-		bcopy := make([]byte, len(b))
-		copy(bcopy, b)
-
-		*r = %[1]v{_json: &bcopy}
-		return nil
-	}
-	func (r %[1]v) json() []byte {
-		if r._json == nil {
-			return r.defaultJson()
-		}
-		
-		return *r._json
-	}
-	func (r %[1]v) path() string {
-		return r._path
-	}
-	func (r %[1]v) setJson(v []byte) {
-		*r._json = v
-	}
-	func (r *%[1]v) ensureJson() {
-		if r._json != nil {
-			return
-		}
-
-		b := r.json()
-		r._json = &b
-	}
-	func (r %[1]v) result() gjson.Result {
-		if r._path == "" {
-			return gjson.ParseBytes(r.json())
-		}
-		return gjson.GetBytes(r.json(), r.path())
-	}
-	func (r %[1]v) Exists() bool {
-		return r.result().Exists()
-	}
-	func (r %[1]v) Delete() error {
-		res, err := sjson.DeleteBytes(r.json(), r.path())
-		if err != nil {
-			return err
-		}
-		r.setJson(res)
-		return nil
-	}
-	func (r *%[1]v) set(incoming []byte) error {
-		r.ensureJson()
-
-		if r._path == "" {
-			r.setJson(incoming)
-			return nil	
-		}
-
-		res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
-		if err != nil {
-			return err
-		}
-		r.setJson(res)
-		return nil
-	}
-	`, s.name))
+	`, s.name, defaultJson))
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
@@ -168,16 +79,8 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Set(v *%v) error {
 				incoming := v.currentJson()
-		
-				param := []byte{'['}
-				param = append(param, r.currentJson()...)
-				param = append(param, ',')
-				param = append(param, incoming...)
-				param = append(param, ']')
-	
-				incoming = []byte(gjson.GetBytes(param, "@join").Raw)
-		
-				return r.set(incoming)
+
+				return r.setArray(incoming)
 			}
 			`, s.name, s.name))
 		} else {
@@ -190,24 +93,6 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 			`, s.name, s.name))
 		}
 	}
-
-	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r *%v) defaultJson() []byte {
-		return []byte("%v")
-	}
-	`, s.name, defaultJson))
-}
-
-func (s *structType) AddField(f StructField) {
-	if f.IsEmbedded() {
-		for _, field := range s.fields {
-			if field.IsEmbedded() && field.Type == f.Type {
-				return
-			}
-		}
-	}
-
-	s.fields = append(s.fields, f)
 }
 
 func (s *structType) AddGetter(name, path, styp string) {
@@ -215,11 +100,13 @@ func (s *structType) AddGetter(name, path, styp string) {
 		func (r *%v) Get%v() *%v {
 			r.ensureJson()
 			return &%v{ 
-				_path: pathJoin(r._path, "%v"),
-				_json: r._json,
+				__node[%v]{
+					_path: pathJoin(r._path, "%v"),
+					_json: r._json,
+				},
 			}
 		}
-	`, s.name, name, styp, styp, path))
+	`, s.name, name, styp, styp, styp, path))
 }
 
 func (s *structType) AddIndexGetter(styp string, dtype string) {
@@ -227,17 +114,20 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 		func (r *%v) At(i int) *%v {
 			r.ensureJson()
 			return &%v{ 
-				_path: pathJoin(r._path, strconv.Itoa(i)),
-				_json: r._json,
+				__node[%v]{
+					_path: pathJoin(r._path, strconv.Itoa(i)),
+					_json: r._json,
+				},
 			}
 		}
-	`, s.name, styp, styp))
+	`, s.name, styp, styp, styp))
 	appendType := "*" + styp
 	if dtype != "" {
 		appendType = dtype
 	}
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Append(v %v) error {
+			r.ensureJson()
 			return r.At(-1).Set(v)
 		}
 	`, s.name, appendType))
@@ -273,11 +163,13 @@ func (s *structType) AddAsGetter(name, styp string) {
 		func (r *%v) As%v() *%v {
 			r.ensureJson()
 			return &%v{ 
-				_path: r._path,
-				_json: r._json,
+				__node[%v]{
+					_path: r._path,
+					_json: r._json,
+				},
 			}
 		}
-	`, s.name, name, styp, styp))
+	`, s.name, name, styp, styp, styp))
 }
 
 type StructField struct {
@@ -682,6 +574,13 @@ func (g *generator) namedAllOfTypeFor(sch *jsonschema.Schema) (string, string, e
 	return g.buildTypeFor(name, schs, true)
 }
 
+//go:embed utils.go.tpl
+var utils string
+
+func init() {
+	utils = strings.ReplaceAll(utils, "package tpl", "")
+}
+
 func Gen(config Config) error {
 	g := &generator{
 		config:     config,
@@ -709,15 +608,7 @@ func Gen(config Config) error {
 		w.Import("", importStr)
 	}
 
-	w.w.Write([]byte(`
-	func pathJoin(p1, p2 string) string {
-		if p1 == "" {
-			return p2
-		}
-
-		return p1+"."+p2
-	}
-	`))
+	w.w.Write([]byte(utils))
 
 	for iname, method := range g.interfaces {
 		w.Interface(iname, method)
@@ -729,9 +620,7 @@ func Gen(config Config) error {
 	for _, typeName := range typeNames {
 		str := g.types[typeName]
 		w.StructStart(str.name)
-		for _, field := range str.fields {
-			w.Field(field.Name, field.Type, field.Tags)
-		}
+		w.Field("", fmt.Sprintf("__node[%v]", str.name), "")
 		w.StructEnd()
 
 		sort.Strings(str.methods)

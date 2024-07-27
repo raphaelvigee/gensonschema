@@ -120,7 +120,7 @@ func (r *__node[D]) set(incoming []byte) error {
     return nil
 }
 
-func (r *__node[D]) setArray(incoming []byte) error {
+func (r *__node[D]) setMerge(incoming []byte) error {
     param := []byte{'['}
     param = append(param, r.currentJson()...)
     param = append(param, ',')

@@ -80,7 +80,7 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 			func (r %v) Set(v *%v) error {
 				incoming := v.currentJson()
 
-				return r.setArray(incoming)
+				return r.setMerge(incoming)
 			}
 			`, s.name, s.name))
 		} else {

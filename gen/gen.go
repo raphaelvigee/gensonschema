@@ -144,16 +144,18 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
-		func (r %v) Range(yield func(int, *%v) bool) {
-			for i := 0; i < r.Len(); i++ {
-				v := r.At(i)
-
-				if !yield(i, v) {
-					break
+		func (r %v) Range() func(yield func(int, *%v) bool) {
+			return func(yield func(int, *%v) bool) {
+				for i := 0; i < r.Len(); i++ {
+					v := r.At(i)
+		
+					if !yield(i, v) {
+						break
+					}
 				}
 			}
 		}
-	`, s.name, styp))
+	`, s.name, styp, styp))
 }
 
 func (s *structType) AddAsGetter(name, styp string) {

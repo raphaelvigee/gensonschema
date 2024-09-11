@@ -653,12 +653,14 @@ func (r ArrayTopfield1) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r ArrayTopfield1) Range(yield func(int, *ArrayDefinitionsDef1) bool) {
-	for i := 0; i < r.Len(); i++ {
-		v := r.At(i)
+func (r ArrayTopfield1) Range() func(yield func(int, *ArrayDefinitionsDef1) bool) {
+	return func(yield func(int, *ArrayDefinitionsDef1) bool) {
+		for i := 0; i < r.Len(); i++ {
+			v := r.At(i)
 
-		if !yield(i, v) {
-			break
+			if !yield(i, v) {
+				break
+			}
 		}
 	}
 }
@@ -719,12 +721,14 @@ func (r ArrayTopfield2) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r ArrayTopfield2) Range(yield func(int, *String) bool) {
-	for i := 0; i < r.Len(); i++ {
-		v := r.At(i)
+func (r ArrayTopfield2) Range() func(yield func(int, *String) bool) {
+	return func(yield func(int, *String) bool) {
+		for i := 0; i < r.Len(); i++ {
+			v := r.At(i)
 
-		if !yield(i, v) {
-			break
+			if !yield(i, v) {
+				break
+			}
 		}
 	}
 }
@@ -865,12 +869,14 @@ func (r ArraysSchemaFruits) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r ArraysSchemaFruits) Range(yield func(int, *String) bool) {
-	for i := 0; i < r.Len(); i++ {
-		v := r.At(i)
+func (r ArraysSchemaFruits) Range() func(yield func(int, *String) bool) {
+	return func(yield func(int, *String) bool) {
+		for i := 0; i < r.Len(); i++ {
+			v := r.At(i)
 
-		if !yield(i, v) {
-			break
+			if !yield(i, v) {
+				break
+			}
 		}
 	}
 }
@@ -922,12 +928,14 @@ func (r ArraysSchemaVegetables) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r ArraysSchemaVegetables) Range(yield func(int, *ArraysSchemaDefsVeggie) bool) {
-	for i := 0; i < r.Len(); i++ {
-		v := r.At(i)
+func (r ArraysSchemaVegetables) Range() func(yield func(int, *ArraysSchemaDefsVeggie) bool) {
+	return func(yield func(int, *ArraysSchemaDefsVeggie) bool) {
+		for i := 0; i < r.Len(); i++ {
+			v := r.At(i)
 
-		if !yield(i, v) {
-			break
+			if !yield(i, v) {
+				break
+			}
 		}
 	}
 }
@@ -1063,12 +1071,14 @@ func (r NestedarraysField1) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r NestedarraysField1) Range(yield func(int, *NestedarraysField1Items) bool) {
-	for i := 0; i < r.Len(); i++ {
-		v := r.At(i)
+func (r NestedarraysField1) Range() func(yield func(int, *NestedarraysField1Items) bool) {
+	return func(yield func(int, *NestedarraysField1Items) bool) {
+		for i := 0; i < r.Len(); i++ {
+			v := r.At(i)
 
-		if !yield(i, v) {
-			break
+			if !yield(i, v) {
+				break
+			}
 		}
 	}
 }
@@ -1150,12 +1160,14 @@ func (r NestedarraysField1ItemsField2) Len() int {
 	return int(res.Get("#").Int())
 }
 
-func (r NestedarraysField1ItemsField2) Range(yield func(int, *SomeTitle) bool) {
-	for i := 0; i < r.Len(); i++ {
-		v := r.At(i)
+func (r NestedarraysField1ItemsField2) Range() func(yield func(int, *SomeTitle) bool) {
+	return func(yield func(int, *SomeTitle) bool) {
+		for i := 0; i < r.Len(); i++ {
+			v := r.At(i)
 
-		if !yield(i, v) {
-			break
+			if !yield(i, v) {
+				break
+			}
 		}
 	}
 }

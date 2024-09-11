@@ -130,7 +130,7 @@ func (r *__node[D]) set(incoming []byte) error {
 	return nil
 }
 
-func (r *__node[D]) setArray(incoming []byte) error {
+func (r *__node[D]) setMerge(incoming []byte) error {
 	param := []byte{'['}
 	param = append(param, r.currentJson()...)
 	param = append(param, ',')
@@ -263,7 +263,7 @@ type AllofShipping_address struct {
 func (r AllofShipping_address) Set(v *AllofShipping_address) error {
 	incoming := v.currentJson()
 
-	return r.setArray(incoming)
+	return r.setMerge(incoming)
 }
 
 func (r *AllofShipping_address) GetCity() *String {
@@ -303,7 +303,7 @@ type AllofoneofData struct {
 func (r AllofoneofData) Set(v *AllofoneofData) error {
 	incoming := v.currentJson()
 
-	return r.setArray(incoming)
+	return r.setMerge(incoming)
 }
 
 func (r *AllofoneofData) AsAllOf0OneOf0() *AllofoneofDataAllOf0OneOf0 {
@@ -653,6 +653,16 @@ func (r ArrayTopfield1) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r ArrayTopfield1) Range(yield func(int, *ArrayDefinitionsDef1) bool) {
+	for i := 0; i < r.Len(); i++ {
+		v := r.At(i)
+
+		if !yield(i, v) {
+			break
+		}
+	}
+}
+
 func (r ArrayTopfield1) Copy() *ArrayTopfield1 {
 	return &ArrayTopfield1{
 		__node: r.copy(),
@@ -707,6 +717,16 @@ func (r ArrayTopfield2) Len() int {
 		return 0
 	}
 	return int(res.Get("#").Int())
+}
+
+func (r ArrayTopfield2) Range(yield func(int, *String) bool) {
+	for i := 0; i < r.Len(); i++ {
+		v := r.At(i)
+
+		if !yield(i, v) {
+			break
+		}
+	}
 }
 
 func (r ArrayTopfield2) Copy() *ArrayTopfield2 {
@@ -845,6 +865,16 @@ func (r ArraysSchemaFruits) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r ArraysSchemaFruits) Range(yield func(int, *String) bool) {
+	for i := 0; i < r.Len(); i++ {
+		v := r.At(i)
+
+		if !yield(i, v) {
+			break
+		}
+	}
+}
+
 func (r ArraysSchemaFruits) Copy() *ArraysSchemaFruits {
 	return &ArraysSchemaFruits{
 		__node: r.copy(),
@@ -890,6 +920,16 @@ func (r ArraysSchemaVegetables) Len() int {
 		return 0
 	}
 	return int(res.Get("#").Int())
+}
+
+func (r ArraysSchemaVegetables) Range(yield func(int, *ArraysSchemaDefsVeggie) bool) {
+	for i := 0; i < r.Len(); i++ {
+		v := r.At(i)
+
+		if !yield(i, v) {
+			break
+		}
+	}
 }
 
 func (r ArraysSchemaVegetables) Copy() *ArraysSchemaVegetables {
@@ -1023,6 +1063,16 @@ func (r NestedarraysField1) Len() int {
 	return int(res.Get("#").Int())
 }
 
+func (r NestedarraysField1) Range(yield func(int, *NestedarraysField1Items) bool) {
+	for i := 0; i < r.Len(); i++ {
+		v := r.At(i)
+
+		if !yield(i, v) {
+			break
+		}
+	}
+}
+
 func (r NestedarraysField1) Copy() *NestedarraysField1 {
 	return &NestedarraysField1{
 		__node: r.copy(),
@@ -1098,6 +1148,16 @@ func (r NestedarraysField1ItemsField2) Len() int {
 		return 0
 	}
 	return int(res.Get("#").Int())
+}
+
+func (r NestedarraysField1ItemsField2) Range(yield func(int, *SomeTitle) bool) {
+	for i := 0; i < r.Len(); i++ {
+		v := r.At(i)
+
+		if !yield(i, v) {
+			break
+		}
+	}
 }
 
 func (r NestedarraysField1ItemsField2) Copy() *NestedarraysField1ItemsField2 {

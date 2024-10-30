@@ -1,5 +1,10 @@
 package tpl
 
+import (
+    "bytes"
+    "sync/atomic"
+)
+
 func pathJoin(p1, p2 string) string {
     if p1 == "" {
         return p2
@@ -12,9 +17,24 @@ type __delegate interface {
     typeDefaultJson() []byte
 }
 
+type __data struct {
+    _json []byte
+    _c atomic.Uint64
+}
+
+type __node_interface interface {
+	JSON() []byte
+}
+
 type __node[D __delegate] struct {
-	_json *[]byte
+	_data *__data
 	_path string
+
+	_parent __node_interface
+	_ppath string
+
+	_rc uint64
+	_rjson []byte
 }
 
 func (r __node[D]) currentJson() []byte {
@@ -22,8 +42,16 @@ func (r __node[D]) currentJson() []byte {
         return r.json()
     }
 
+    if r._rjson != nil && r._rc > 0 && r._rc == r._data._c.Load() {
+        return r._rjson
+    }
+
     res := r.result()
-    return []byte(res.Raw)
+
+	r._rc = r._data._c.Load()
+	r._rjson = []byte(res.Raw)
+
+    return r._rjson
 }
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
@@ -34,8 +62,12 @@ func (r __node[D]) JSON() []byte {
     return r.currentJson()
 }
 
+func (r *__node[D]) newData(b []byte) *__data {
+    return &__data{_json: b, _c: atomic.Uint64{}}
+}
+
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
-    if r._json != nil {
+    if r._data != nil {
         if r._path == "" {
             bcopy := make([]byte, len(b))
             copy(bcopy, b)
@@ -55,16 +87,16 @@ func (r *__node[D]) UnmarshalJSON(b []byte) error {
     bcopy := make([]byte, len(b))
     copy(bcopy, b)
 
-    *r = __node[D]{_json: &bcopy}
+    *r = __node[D]{_data: r.newData(bcopy)}
     return nil
 }
 
 func (r __node[D]) json() []byte {
-    if r._json == nil {
+    if r._data == nil {
         return r.defaultJson()
     }
 
-    return *r._json
+    return r._data._json
 }
 
 func (r __node[D]) path() string {
@@ -72,19 +104,24 @@ func (r __node[D]) path() string {
 }
 
 func (r __node[D]) setJson(v []byte) {
-    *r._json = v
+    r._data._json = v
+	r._data._c.Add(1)
 }
 
 func (r *__node[D]) ensureJson() {
-    if r._json != nil {
+    if r._data != nil {
         return
     }
 
     b := r.json()
-    r._json = &b
+    r._data = r.newData(b)
 }
 
 func (r __node[D]) result() gjson.Result {
+	if parent := r._parent; parent != nil {
+        return gjson.GetBytes(parent.JSON(), r._ppath)
+    }
+
     if r._path == "" {
         return gjson.ParseBytes(r.json())
     }
@@ -121,13 +158,17 @@ func (r *__node[D]) set(incoming []byte) error {
 }
 
 func (r *__node[D]) setMerge(incoming []byte) error {
-    param := []byte{'['}
-    param = append(param, r.currentJson()...)
-    param = append(param, ',')
-    param = append(param, incoming...)
-    param = append(param, ']')
+	current := r.currentJson()
 
-    incoming = []byte(gjson.GetBytes(param, "@join").Raw)
+	var buf bytes.Buffer
+	buf.Grow(len(current)+len(incoming)+3)
+	buf.WriteByte('[')
+	buf.Write(current)
+	buf.WriteByte(',')
+	buf.Write(incoming)
+	buf.WriteByte(']')
+
+    incoming = []byte(gjson.GetBytes(buf.Bytes(), "@join").Raw)
 
     return r.set(incoming)
 }
@@ -137,7 +178,7 @@ func (r __node[D]) copy() __node[D] {
     b := make([]byte, len(j))
     copy(b, j)
     return __node[D]{
-        _json: &b,
+        _data: r.newData(b),
     }
 }
 

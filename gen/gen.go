@@ -101,12 +101,14 @@ func (s *structType) AddGetter(name, path, styp string) {
 			r.ensureJson()
 			return &%v{ 
 				__node[%v]{
-					_path: pathJoin(r._path, "%v"),
-					_json: r._json,
+					_data: r._data,
+					_path: pathJoin(r._path, %q),
+					_parent: r.__node,
+					_ppath: %q,
 				},
 			}
 		}
-	`, s.name, name, styp, styp, styp, path))
+	`, s.name, name, styp, styp, styp, path, path))
 }
 
 func (s *structType) AddIndexGetter(styp string, dtype string) {
@@ -115,8 +117,10 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 			r.ensureJson()
 			return &%v{ 
 				__node[%v]{
+					_data: r._data,
 					_path: pathJoin(r._path, strconv.Itoa(i)),
-					_json: r._json,
+					_parent: r.__node,
+					_ppath: strconv.Itoa(i),
 				},
 			}
 		}
@@ -146,7 +150,9 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Range() func(yield func(int, *%v) bool) {
 			return func(yield func(int, *%v) bool) {
-				for i := 0; i < r.Len(); i++ {
+				l := r.Len()
+
+				for i := 0; i < l; i++ {
 					v := r.At(i)
 		
 					if !yield(i, v) {
@@ -177,8 +183,10 @@ func (s *structType) AddAsGetter(name, styp string) {
 			r.ensureJson()
 			return &%v{ 
 				__node[%v]{
+					_data: r._data,
 					_path: r._path,
-					_json: r._json,
+					_parent: r._parent,
+					_ppath: r._ppath,
 				},
 			}
 		}
@@ -592,6 +600,10 @@ var utils string
 
 func init() {
 	utils = strings.ReplaceAll(utils, "package tpl", "")
+
+	r := regexp.MustCompile(`(?m)^package .*$`)
+
+	utils = r.ReplaceAllString(utils, "")
 }
 
 func Gen(config Config) error {
@@ -609,6 +621,7 @@ func Gen(config Config) error {
 	g.imports["github.com/tidwall/gjson"] = struct{}{}
 	g.imports["github.com/tidwall/sjson"] = struct{}{}
 	g.imports["encoding/json"] = struct{}{}
+	g.imports["sync/atomic"] = struct{}{}
 	g.imports["strconv"] = struct{}{}
 	g.imports["fmt"] = struct{}{}
 

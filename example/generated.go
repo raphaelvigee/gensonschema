@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"strconv"
 	"sync/atomic"
+	"unsafe"
 
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/sjson"
@@ -25,12 +26,12 @@ type __delegate interface {
 }
 
 type __data struct {
-	_json []byte
+	_json string
 	_c    atomic.Uint64
 }
 
 type __node_interface interface {
-	JSON() []byte
+	currentJson() string
 }
 
 type __node[D __delegate] struct {
@@ -41,49 +42,57 @@ type __node[D __delegate] struct {
 	_ppath  string
 
 	_rc    uint64
-	_rjson []byte
+	_rjson string
 }
 
-func (r __node[D]) currentJson() []byte {
+func (r __node[D]) unsafeGetBytes(s string) []byte {
+	d := unsafe.StringData(s)
+	b := unsafe.Slice(d, len(s))
+
+	return b
+}
+
+func (r __node[D]) currentJsonb() []byte {
+	return r.unsafeGetBytes(r.currentJson())
+}
+
+func (r __node[D]) currentJson() string {
 	if r._path == "" {
 		return r.json()
 	}
 
-	if r._rjson != nil && r._rc > 0 && r._rc == r._data._c.Load() {
+	if r._rjson != "" && r._rc > 0 && r._rc == r._data._c.Load() {
 		return r._rjson
 	}
 
 	res := r.result()
 
 	r._rc = r._data._c.Load()
-	r._rjson = []byte(res.Raw)
+	r._rjson = res.Raw
 
 	return r._rjson
 }
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
-	return r.currentJson(), nil
+	return r.JSON(), nil
 }
 
 func (r __node[D]) JSON() []byte {
-	return r.currentJson()
+	return r.currentJsonb()
 }
 
-func (r *__node[D]) newData(b []byte) *__data {
+func (r *__node[D]) newData(b string) *__data {
 	return &__data{_json: b, _c: atomic.Uint64{}}
 }
 
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
 	if r._data != nil {
 		if r._path == "" {
-			bcopy := make([]byte, len(b))
-			copy(bcopy, b)
-
-			r.setJson(bcopy)
+			r.setJson(string(b))
 			return nil
 		}
 
-		njson, err := sjson.SetRawBytes(r.json(), r.path(), b)
+		njson, err := sjson.SetRaw(r.json(), r.path(), string(b))
 		if err != nil {
 			return err
 		}
@@ -91,16 +100,13 @@ func (r *__node[D]) UnmarshalJSON(b []byte) error {
 		return nil
 	}
 
-	bcopy := make([]byte, len(b))
-	copy(bcopy, b)
-
-	*r = __node[D]{_data: r.newData(bcopy)}
+	*r = __node[D]{_data: r.newData(string(b))}
 	return nil
 }
 
-func (r __node[D]) json() []byte {
+func (r __node[D]) json() string {
 	if r._data == nil {
-		return r.defaultJson()
+		return string(r.defaultJson())
 	}
 
 	return r._data._json
@@ -110,7 +116,7 @@ func (r __node[D]) path() string {
 	return r._path
 }
 
-func (r __node[D]) setJson(v []byte) {
+func (r __node[D]) setJson(v string) {
 	r._data._json = v
 	r._data._c.Add(1)
 }
@@ -126,13 +132,13 @@ func (r *__node[D]) ensureJson() {
 
 func (r __node[D]) result() gjson.Result {
 	if parent := r._parent; parent != nil {
-		return gjson.GetBytes(parent.JSON(), r._ppath)
+		return gjson.Get(parent.currentJson(), r._ppath)
 	}
 
 	if r._path == "" {
-		return gjson.ParseBytes(r.json())
+		return gjson.Parse(r.json())
 	}
-	return gjson.GetBytes(r.json(), r.path())
+	return gjson.Get(r.json(), r.path())
 }
 
 func (r __node[D]) Exists() bool {
@@ -140,7 +146,7 @@ func (r __node[D]) Exists() bool {
 }
 
 func (r __node[D]) Delete() error {
-	res, err := sjson.DeleteBytes(r.json(), r.path())
+	res, err := sjson.Delete(r.json(), r.path())
 	if err != nil {
 		return err
 	}
@@ -148,7 +154,11 @@ func (r __node[D]) Delete() error {
 	return nil
 }
 
-func (r *__node[D]) set(incoming []byte) error {
+func (r *__node[D]) setb(incoming []byte) error {
+	return r.set(string(incoming))
+}
+
+func (r *__node[D]) set(incoming string) error {
 	r.ensureJson()
 
 	if r._path == "" {
@@ -156,7 +166,7 @@ func (r *__node[D]) set(incoming []byte) error {
 		return nil
 	}
 
-	res, err := sjson.SetRawBytes(r.json(), r.path(), incoming)
+	res, err := sjson.SetRaw(r.json(), r.path(), incoming)
 	if err != nil {
 		return err
 	}
@@ -164,28 +174,27 @@ func (r *__node[D]) set(incoming []byte) error {
 	return nil
 }
 
-func (r *__node[D]) setMerge(incoming []byte) error {
+func (r *__node[D]) setMerge(incoming string) error {
 	current := r.currentJson()
 
 	var buf bytes.Buffer
 	buf.Grow(len(current) + len(incoming) + 3)
 	buf.WriteByte('[')
-	buf.Write(current)
+	buf.WriteString(current)
 	buf.WriteByte(',')
-	buf.Write(incoming)
+	buf.WriteString(incoming)
 	buf.WriteByte(']')
 
-	incoming = []byte(gjson.GetBytes(buf.Bytes(), "@join").Raw)
+	incoming2 := gjson.GetBytes(buf.Bytes(), "@join").Raw
 
-	return r.set(incoming)
+	return r.set(incoming2)
 }
 
 func (r __node[D]) copy() __node[D] {
 	j := r.currentJson()
-	b := make([]byte, len(j))
-	copy(b, j)
+
 	return __node[D]{
-		_data: r.newData(b),
+		_data: r.newData(j),
 	}
 }
 
@@ -726,7 +735,7 @@ func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
 }
 
 func (r ArrayTopfield1) Clear() error {
-	return r.set([]byte("[]"))
+	return r.set("[]")
 }
 
 func (r ArrayTopfield1) Len() int {
@@ -794,11 +803,11 @@ func (r *ArrayTopfield2) Set(v []string) error {
 		return err
 	}
 
-	return r.set(b)
+	return r.setb(b)
 }
 
 func (r ArrayTopfield2) Clear() error {
-	return r.set([]byte("[]"))
+	return r.set("[]")
 }
 
 func (r ArrayTopfield2) Len() int {
@@ -954,11 +963,11 @@ func (r *ArraysSchemaFruits) Set(v []string) error {
 		return err
 	}
 
-	return r.set(b)
+	return r.setb(b)
 }
 
 func (r ArraysSchemaFruits) Clear() error {
-	return r.set([]byte("[]"))
+	return r.set("[]")
 }
 
 func (r ArraysSchemaFruits) Len() int {
@@ -1021,7 +1030,7 @@ func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
 }
 
 func (r ArraysSchemaVegetables) Clear() error {
-	return r.set([]byte("[]"))
+	return r.set("[]")
 }
 
 func (r ArraysSchemaVegetables) Len() int {
@@ -1070,7 +1079,7 @@ func (r *Bool) Set(v bool) error {
 		return err
 	}
 
-	return r.set(b)
+	return r.setb(b)
 }
 
 func (r Bool) Copy() *Bool {
@@ -1115,6 +1124,33 @@ func (r DNestedTitle1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
+type Float64 struct {
+	__node[Float64]
+}
+
+func (r Float64) Value() float64 {
+	res := r.result()
+	return res.Float()
+}
+func (r *Float64) Set(v float64) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	return r.setb(b)
+}
+
+func (r Float64) Copy() *Float64 {
+	return &Float64{
+		__node: r.copy(),
+	}
+}
+
+func (r Float64) typeDefaultJson() []byte {
+	return []byte("")
+}
+
 type Int64 struct {
 	__node[Int64]
 }
@@ -1129,7 +1165,7 @@ func (r *Int64) Set(v int64) error {
 		return err
 	}
 
-	return r.set(b)
+	return r.setb(b)
 }
 
 func (r Int64) Copy() *Int64 {
@@ -1140,6 +1176,205 @@ func (r Int64) Copy() *Int64 {
 
 func (r Int64) typeDefaultJson() []byte {
 	return []byte("")
+}
+
+type LargeFileItems struct {
+	__node[LargeFileItems]
+}
+
+func (r LargeFileItems) Set(v *LargeFileItems) error {
+	incoming := v.currentJson()
+
+	return r.set(incoming)
+}
+
+func (r *LargeFileItems) GetActor() *LargeFileItemsActor {
+	r.ensureJson()
+	return &LargeFileItemsActor{
+		__node[LargeFileItemsActor]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "actor"),
+			_parent: r.__node,
+			_ppath:  "actor",
+		},
+	}
+}
+
+func (r *LargeFileItems) GetId() *String {
+	r.ensureJson()
+	return &String{
+		__node[String]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "id"),
+			_parent: r.__node,
+			_ppath:  "id",
+		},
+	}
+}
+
+func (r *LargeFileItems) GetType() *String {
+	r.ensureJson()
+	return &String{
+		__node[String]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "type"),
+			_parent: r.__node,
+			_ppath:  "type",
+		},
+	}
+}
+
+func (r LargeFileItems) Copy() *LargeFileItems {
+	return &LargeFileItems{
+		__node: r.copy(),
+	}
+}
+
+func (r LargeFileItems) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
+type LargeFileItemsActor struct {
+	__node[LargeFileItemsActor]
+}
+
+func (r LargeFileItemsActor) Set(v *LargeFileItemsActor) error {
+	incoming := v.currentJson()
+
+	return r.set(incoming)
+}
+
+func (r *LargeFileItemsActor) GetAvatar_url() *String {
+	r.ensureJson()
+	return &String{
+		__node[String]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "avatar_url"),
+			_parent: r.__node,
+			_ppath:  "avatar_url",
+		},
+	}
+}
+
+func (r *LargeFileItemsActor) GetGravatar_id() *String {
+	r.ensureJson()
+	return &String{
+		__node[String]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "gravatar_id"),
+			_parent: r.__node,
+			_ppath:  "gravatar_id",
+		},
+	}
+}
+
+func (r *LargeFileItemsActor) GetId() *Float64 {
+	r.ensureJson()
+	return &Float64{
+		__node[Float64]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "id"),
+			_parent: r.__node,
+			_ppath:  "id",
+		},
+	}
+}
+
+func (r *LargeFileItemsActor) GetLogin() *String {
+	r.ensureJson()
+	return &String{
+		__node[String]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "login"),
+			_parent: r.__node,
+			_ppath:  "login",
+		},
+	}
+}
+
+func (r *LargeFileItemsActor) GetUrl() *String {
+	r.ensureJson()
+	return &String{
+		__node[String]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, "url"),
+			_parent: r.__node,
+			_ppath:  "url",
+		},
+	}
+}
+
+func (r LargeFileItemsActor) Copy() *LargeFileItemsActor {
+	return &LargeFileItemsActor{
+		__node: r.copy(),
+	}
+}
+
+func (r LargeFileItemsActor) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
+type LargeFileLargeFile struct {
+	__node[LargeFileLargeFile]
+}
+
+func (r LargeFileLargeFile) Set(v *LargeFileLargeFile) error {
+	incoming := v.currentJson()
+
+	return r.set(incoming)
+}
+
+func (r *LargeFileLargeFile) Append(v *LargeFileItems) error {
+	r.ensureJson()
+	return r.At(-1).Set(v)
+}
+
+func (r *LargeFileLargeFile) At(i int) *LargeFileItems {
+	r.ensureJson()
+	return &LargeFileItems{
+		__node[LargeFileItems]{
+			_data:   r._data,
+			_path:   pathJoin(r._path, strconv.Itoa(i)),
+			_parent: r.__node,
+			_ppath:  strconv.Itoa(i),
+		},
+	}
+}
+
+func (r LargeFileLargeFile) Clear() error {
+	return r.set("[]")
+}
+
+func (r LargeFileLargeFile) Len() int {
+	res := r.result()
+	if !res.IsArray() {
+		return 0
+	}
+	return int(res.Get("#").Int())
+}
+
+func (r LargeFileLargeFile) Range() func(yield func(int, *LargeFileItems) bool) {
+	return func(yield func(int, *LargeFileItems) bool) {
+		l := r.Len()
+
+		for i := 0; i < l; i++ {
+			v := r.At(i)
+
+			if !yield(i, v) {
+				break
+			}
+		}
+	}
+}
+
+func (r LargeFileLargeFile) Copy() *LargeFileLargeFile {
+	return &LargeFileLargeFile{
+		__node: r.copy(),
+	}
+}
+
+func (r LargeFileLargeFile) typeDefaultJson() []byte {
+	return []byte("[]")
 }
 
 type NestedarraysField1 struct {
@@ -1170,7 +1405,7 @@ func (r *NestedarraysField1) At(i int) *NestedarraysField1Items {
 }
 
 func (r NestedarraysField1) Clear() error {
-	return r.set([]byte("[]"))
+	return r.set("[]")
 }
 
 func (r NestedarraysField1) Len() int {
@@ -1265,7 +1500,7 @@ func (r *NestedarraysField1ItemsField2) At(i int) *SomeTitle {
 }
 
 func (r NestedarraysField1ItemsField2) Clear() error {
-	return r.set([]byte("[]"))
+	return r.set("[]")
 }
 
 func (r NestedarraysField1ItemsField2) Len() int {
@@ -1554,7 +1789,7 @@ func (r *String) Set(v string) error {
 		return err
 	}
 
-	return r.set(b)
+	return r.setb(b)
 }
 
 func (r String) Copy() *String {

@@ -71,7 +71,7 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 			b, err := json.Marshal(v)
 			if err != nil { return err }
 
-			return r.set(b)
+			return r.setb(b)
 		}
 		`, s.name, typ))
 	} else {
@@ -144,7 +144,7 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Clear() error {
-			return r.set([]byte("[]"))
+			return r.set("[]")
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`

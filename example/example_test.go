@@ -2,6 +2,7 @@
 package gen_test
 
 import (
+	_ "embed"
 	"encoding/json"
 	gen "github.com/raphaelvigee/gensonschema/example"
 	"github.com/stretchr/testify/assert"
@@ -64,6 +65,22 @@ func TestGetSetOneOf(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.JSONEq(t, `{"firstName": "Alice"}`, string(actual))
+}
+
+//go:embed testdata/large-file.data.json
+var largeFile []byte
+
+func Benchmark(b *testing.B) {
+	var obj gen.LargeFileLargeFile
+	err := json.Unmarshal(largeFile, &obj)
+	require.NoError(b, err)
+
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		value := obj.At(1000).GetActor().GetUrl().Value()
+		assert.NotEmpty(b, value)
+	}
 }
 
 func TestSetOneOfRoot(t *testing.T) {

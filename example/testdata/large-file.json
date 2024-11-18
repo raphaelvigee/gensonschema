@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "string"
+      },
+      "type": {
+        "type": "string"
+      },
+      "actor": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "login": {
+            "type": "string"
+          },
+          "gravatar_id": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "login",
+          "gravatar_id",
+          "url",
+          "avatar_url"
+        ]
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "actor",
+      "repo",
+      "payload",
+      "public",
+      "created_at"
+    ]
+  }
+}

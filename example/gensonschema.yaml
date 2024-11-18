@@ -19,6 +19,8 @@ resources:
     source: ./testdata/array.json
   - url: nestedarrays.json
     source: ./testdata/nestedarrays.json
+  - url: large-file.json
+    source: ./testdata/large-file.json
 
 generate:
   - simple.json
@@ -29,3 +31,4 @@ generate:
   - allofoneof.json
   - array.json
   - nestedarrays.json
+  - large-file.json

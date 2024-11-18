@@ -71,6 +71,8 @@ func TestGetSetOneOf(t *testing.T) {
 var largeFile []byte
 
 func Benchmark(b *testing.B) {
+	b.ReportAllocs()
+
 	var obj gen.LargeFileLargeFile
 	err := json.Unmarshal(largeFile, &obj)
 	require.NoError(b, err)

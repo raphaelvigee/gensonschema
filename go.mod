@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/stretchr/testify v1.9.0
-	github.com/tidwall/gjson v1.17.1
+	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/sjson v1.2.5
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
 	golang.org/x/tools v0.21.0

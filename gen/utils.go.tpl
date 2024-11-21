@@ -38,11 +38,13 @@ type __node[D __delegate] struct {
 	_rjson string
 }
 
+// https://www.reddit.com/r/golang/comments/14xvgoj/converting_string_byte/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 func (r __node[D]) unsafeGetBytes(s string) []byte {
-    d := unsafe.StringData(s)
-    b := unsafe.Slice(d, len(s))
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
 
-	return b
+func (r __node[D]) unsafeGetString(b []byte) string {
+    return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
 func (r __node[D]) currentJsonb() []byte {
@@ -81,7 +83,7 @@ func (r *__node[D]) newData(b string) *__data {
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
     if r._data != nil {
         if r._path == "" {
-            r.setJson(string(b))
+            r.setJson(r.unsafeGetString(b))
             return nil
         }
 
@@ -93,7 +95,7 @@ func (r *__node[D]) UnmarshalJSON(b []byte) error {
         return nil
     }
 
-    *r = __node[D]{_data: r.newData(string(b))}
+    *r = __node[D]{_data: r.newData(r.unsafeGetString(b))}
     return nil
 }
 
@@ -148,7 +150,7 @@ func (r __node[D]) Delete() error {
 }
 
 func (r *__node[D]) setb(incoming []byte) error {
-    return r.set(string(incoming))
+    return r.set(r.unsafeGetString(incoming))
 }
 
 func (r *__node[D]) set(incoming string) error {

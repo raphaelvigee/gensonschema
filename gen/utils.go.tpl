@@ -36,6 +36,8 @@ type __node[D __delegate] struct {
 
 	_rc uint64
 	_rjson string
+
+	_safe bool
 }
 
 // https://www.reddit.com/r/golang/comments/14xvgoj/converting_string_byte/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
@@ -74,6 +76,11 @@ func (r __node[D]) MarshalJSON() ([]byte, error) {
 
 func (r __node[D]) JSON() []byte {
     return r.currentJsonb()
+}
+
+func (r __node[D]) withSafe(safe bool) __node[D] {
+    r._safe = safe
+    return r
 }
 
 func (r *__node[D]) newData(b string) *__data {
@@ -190,6 +197,7 @@ func (r __node[D]) copy() __node[D] {
 
     return __node[D]{
         _data: r.newData(j),
+        _safe: r._safe,
     }
 }
 
@@ -197,4 +205,3 @@ func (r __node[D]) defaultJson() []byte {
     var d D
 	return d.typeDefaultJson()
 }
-

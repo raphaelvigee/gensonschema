@@ -2,11 +2,16 @@
 package gen_test
 
 import (
+	"bytes"
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	gen "github.com/raphaelvigee/gensonschema/example"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"io"
+	"runtime"
+	"sync/atomic"
 	"testing"
 )
 
@@ -211,4 +216,42 @@ func TestNestedArrays(t *testing.T) {
 	_ = obj2.Append(&v)
 
 	assert.Equal(t, `[{}]`, string(obj2.JSON()))
+}
+
+func TestReference(t *testing.T) {
+	scoped := func(safe bool) (string, func() bool) {
+		var buf bytes.Buffer
+		buf.WriteString(`{"firstName": "hello"}`)
+		defer buf.Reset()
+
+		var finalized atomic.Bool
+
+		runtime.SetFinalizer(&buf.Bytes()[0], func(f *byte) {
+			finalized.Store(true)
+		})
+
+		var obj gen.Person
+		err := json.Unmarshal(buf.Bytes(), &obj)
+		require.NoError(t, err)
+
+		value := obj.WithSafe(safe).GetFirstName().Value()
+
+		if value != "hello" {
+			panic("humm...")
+		}
+
+		return value, func() bool {
+			runtime.GC()
+
+			return finalized.Load()
+		}
+	}
+
+	v, finalized := scoped(false)
+	assert.False(t, finalized())
+	_, _ = fmt.Fprint(io.Discard, v)
+
+	v, finalized = scoped(true)
+	assert.True(t, finalized())
+	_, _ = fmt.Fprint(io.Discard, v)
 }

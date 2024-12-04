@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"strconv"
+	"strings"
 	"sync/atomic"
 	"unsafe"
 
@@ -43,6 +44,8 @@ type __node[D __delegate] struct {
 
 	_rc    uint64
 	_rjson string
+
+	_safe bool
 }
 
 // https://www.reddit.com/r/golang/comments/14xvgoj/converting_string_byte/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
@@ -81,6 +84,11 @@ func (r __node[D]) MarshalJSON() ([]byte, error) {
 
 func (r __node[D]) JSON() []byte {
 	return r.currentJsonb()
+}
+
+func (r __node[D]) withSafe(safe bool) __node[D] {
+	r._safe = safe
+	return r
 }
 
 func (r *__node[D]) newData(b string) *__data {
@@ -197,6 +205,7 @@ func (r __node[D]) copy() __node[D] {
 
 	return __node[D]{
 		_data: r.newData(j),
+		_safe: r._safe,
 	}
 }
 
@@ -223,6 +232,7 @@ func (r *AllOf) GetBilling_address() *AllofDefinitionsAddress {
 			_path:   pathJoin(r._path, "billing_address"),
 			_parent: r.__node,
 			_ppath:  "billing_address",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -235,6 +245,7 @@ func (r *AllOf) GetShipping_address() *AllofShipping_address {
 			_path:   pathJoin(r._path, "shipping_address"),
 			_parent: r.__node,
 			_ppath:  "shipping_address",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -242,6 +253,12 @@ func (r *AllOf) GetShipping_address() *AllofShipping_address {
 func (r AllOf) Copy() *AllOf {
 	return &AllOf{
 		__node: r.copy(),
+	}
+}
+
+func (r AllOf) WithSafe(safe bool) *AllOf {
+	return &AllOf{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -267,6 +284,7 @@ func (r *AllOfOneOf) GetData() *AllofoneofData {
 			_path:   pathJoin(r._path, "data"),
 			_parent: r.__node,
 			_ppath:  "data",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -274,6 +292,12 @@ func (r *AllOfOneOf) GetData() *AllofoneofData {
 func (r AllOfOneOf) Copy() *AllOfOneOf {
 	return &AllOfOneOf{
 		__node: r.copy(),
+	}
+}
+
+func (r AllOfOneOf) WithSafe(safe bool) *AllOfOneOf {
+	return &AllOfOneOf{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -299,6 +323,7 @@ func (r *AllofDefinitionsAddress) GetCity() *String {
 			_path:   pathJoin(r._path, "city"),
 			_parent: r.__node,
 			_ppath:  "city",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -306,6 +331,12 @@ func (r *AllofDefinitionsAddress) GetCity() *String {
 func (r AllofDefinitionsAddress) Copy() *AllofDefinitionsAddress {
 	return &AllofDefinitionsAddress{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofDefinitionsAddress) WithSafe(safe bool) *AllofDefinitionsAddress {
+	return &AllofDefinitionsAddress{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -331,6 +362,7 @@ func (r *AllofShipping_address) GetCity() *String {
 			_path:   pathJoin(r._path, "city"),
 			_parent: r.__node,
 			_ppath:  "city",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -343,6 +375,7 @@ func (r *AllofShipping_address) GetType() *String {
 			_path:   pathJoin(r._path, "type"),
 			_parent: r.__node,
 			_ppath:  "type",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -350,6 +383,12 @@ func (r *AllofShipping_address) GetType() *String {
 func (r AllofShipping_address) Copy() *AllofShipping_address {
 	return &AllofShipping_address{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofShipping_address) WithSafe(safe bool) *AllofShipping_address {
+	return &AllofShipping_address{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -375,6 +414,7 @@ func (r *AllofoneofData) AsAllOf0OneOf0() *AllofoneofDataAllOf0OneOf0 {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -387,6 +427,7 @@ func (r *AllofoneofData) AsAllOf0OneOf1() *AllofoneofDataAllOf0OneOf1 {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -399,6 +440,7 @@ func (r *AllofoneofData) AsAllOf3OneOf1() *AllofoneofDataAllOf3OneOf1 {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -411,6 +453,7 @@ func (r *AllofoneofData) AsDNestedTitle1() *DNestedTitle1 {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -423,6 +466,7 @@ func (r *AllofoneofData) AsNamedOneOf0() *AllofoneofDataAllOf2OneOf0 {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -435,6 +479,7 @@ func (r *AllofoneofData) AsNamedOneOf1() *AllofoneofDataAllOf2OneOf1 {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -447,6 +492,7 @@ func (r *AllofoneofData) GetB() *String {
 			_path:   pathJoin(r._path, "b"),
 			_parent: r.__node,
 			_ppath:  "b",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -454,6 +500,12 @@ func (r *AllofoneofData) GetB() *String {
 func (r AllofoneofData) Copy() *AllofoneofData {
 	return &AllofoneofData{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofData) WithSafe(safe bool) *AllofoneofData {
+	return &AllofoneofData{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -479,6 +531,7 @@ func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
 			_path:   pathJoin(r._path, "a1"),
 			_parent: r.__node,
 			_ppath:  "a1",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -486,6 +539,12 @@ func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
 func (r AllofoneofDataAllOf0OneOf0) Copy() *AllofoneofDataAllOf0OneOf0 {
 	return &AllofoneofDataAllOf0OneOf0{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf0OneOf0) WithSafe(safe bool) *AllofoneofDataAllOf0OneOf0 {
+	return &AllofoneofDataAllOf0OneOf0{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -511,6 +570,7 @@ func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
 			_path:   pathJoin(r._path, "a2"),
 			_parent: r.__node,
 			_ppath:  "a2",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -518,6 +578,12 @@ func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
 func (r AllofoneofDataAllOf0OneOf1) Copy() *AllofoneofDataAllOf0OneOf1 {
 	return &AllofoneofDataAllOf0OneOf1{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf0OneOf1) WithSafe(safe bool) *AllofoneofDataAllOf0OneOf1 {
+	return &AllofoneofDataAllOf0OneOf1{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -543,6 +609,7 @@ func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
 			_path:   pathJoin(r._path, "c1"),
 			_parent: r.__node,
 			_ppath:  "c1",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -550,6 +617,12 @@ func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
 func (r AllofoneofDataAllOf2OneOf0) Copy() *AllofoneofDataAllOf2OneOf0 {
 	return &AllofoneofDataAllOf2OneOf0{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf2OneOf0) WithSafe(safe bool) *AllofoneofDataAllOf2OneOf0 {
+	return &AllofoneofDataAllOf2OneOf0{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -575,6 +648,7 @@ func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
 			_path:   pathJoin(r._path, "c2"),
 			_parent: r.__node,
 			_ppath:  "c2",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -582,6 +656,12 @@ func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
 func (r AllofoneofDataAllOf2OneOf1) Copy() *AllofoneofDataAllOf2OneOf1 {
 	return &AllofoneofDataAllOf2OneOf1{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf2OneOf1) WithSafe(safe bool) *AllofoneofDataAllOf2OneOf1 {
+	return &AllofoneofDataAllOf2OneOf1{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -607,6 +687,7 @@ func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
 			_path:   pathJoin(r._path, "d2"),
 			_parent: r.__node,
 			_ppath:  "d2",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -614,6 +695,12 @@ func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
 func (r AllofoneofDataAllOf3OneOf1) Copy() *AllofoneofDataAllOf3OneOf1 {
 	return &AllofoneofDataAllOf3OneOf1{
 		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf3OneOf1) WithSafe(safe bool) *AllofoneofDataAllOf3OneOf1 {
+	return &AllofoneofDataAllOf3OneOf1{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -639,6 +726,7 @@ func (r *ArrayArray) GetTopfield1() *ArrayTopfield1 {
 			_path:   pathJoin(r._path, "topfield1"),
 			_parent: r.__node,
 			_ppath:  "topfield1",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -651,6 +739,7 @@ func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
 			_path:   pathJoin(r._path, "topfield2"),
 			_parent: r.__node,
 			_ppath:  "topfield2",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -658,6 +747,12 @@ func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
 func (r ArrayArray) Copy() *ArrayArray {
 	return &ArrayArray{
 		__node: r.copy(),
+	}
+}
+
+func (r ArrayArray) WithSafe(safe bool) *ArrayArray {
+	return &ArrayArray{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -683,6 +778,7 @@ func (r *ArrayDefinitionsDef1) GetField1() *String {
 			_path:   pathJoin(r._path, "field1"),
 			_parent: r.__node,
 			_ppath:  "field1",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -695,6 +791,7 @@ func (r *ArrayDefinitionsDef1) GetField2() *String {
 			_path:   pathJoin(r._path, "field2"),
 			_parent: r.__node,
 			_ppath:  "field2",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -702,6 +799,12 @@ func (r *ArrayDefinitionsDef1) GetField2() *String {
 func (r ArrayDefinitionsDef1) Copy() *ArrayDefinitionsDef1 {
 	return &ArrayDefinitionsDef1{
 		__node: r.copy(),
+	}
+}
+
+func (r ArrayDefinitionsDef1) WithSafe(safe bool) *ArrayDefinitionsDef1 {
+	return &ArrayDefinitionsDef1{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -732,6 +835,7 @@ func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -768,6 +872,12 @@ func (r ArrayTopfield1) Copy() *ArrayTopfield1 {
 	}
 }
 
+func (r ArrayTopfield1) WithSafe(safe bool) *ArrayTopfield1 {
+	return &ArrayTopfield1{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r ArrayTopfield1) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -795,6 +905,7 @@ func (r *ArrayTopfield2) At(i int) *String {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -840,6 +951,12 @@ func (r ArrayTopfield2) Copy() *ArrayTopfield2 {
 	}
 }
 
+func (r ArrayTopfield2) WithSafe(safe bool) *ArrayTopfield2 {
+	return &ArrayTopfield2{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r ArrayTopfield2) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -862,6 +979,7 @@ func (r *ArraysSchemaArraysSchema) GetFruits() *ArraysSchemaFruits {
 			_path:   pathJoin(r._path, "fruits"),
 			_parent: r.__node,
 			_ppath:  "fruits",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -874,6 +992,7 @@ func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
 			_path:   pathJoin(r._path, "vegetables"),
 			_parent: r.__node,
 			_ppath:  "vegetables",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -881,6 +1000,12 @@ func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
 func (r ArraysSchemaArraysSchema) Copy() *ArraysSchemaArraysSchema {
 	return &ArraysSchemaArraysSchema{
 		__node: r.copy(),
+	}
+}
+
+func (r ArraysSchemaArraysSchema) WithSafe(safe bool) *ArraysSchemaArraysSchema {
+	return &ArraysSchemaArraysSchema{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -906,6 +1031,7 @@ func (r *ArraysSchemaDefsVeggie) GetVeggieLike() *Bool {
 			_path:   pathJoin(r._path, "veggieLike"),
 			_parent: r.__node,
 			_ppath:  "veggieLike",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -918,6 +1044,7 @@ func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
 			_path:   pathJoin(r._path, "veggieName"),
 			_parent: r.__node,
 			_ppath:  "veggieName",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -925,6 +1052,12 @@ func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
 func (r ArraysSchemaDefsVeggie) Copy() *ArraysSchemaDefsVeggie {
 	return &ArraysSchemaDefsVeggie{
 		__node: r.copy(),
+	}
+}
+
+func (r ArraysSchemaDefsVeggie) WithSafe(safe bool) *ArraysSchemaDefsVeggie {
+	return &ArraysSchemaDefsVeggie{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -955,6 +1088,7 @@ func (r *ArraysSchemaFruits) At(i int) *String {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1000,6 +1134,12 @@ func (r ArraysSchemaFruits) Copy() *ArraysSchemaFruits {
 	}
 }
 
+func (r ArraysSchemaFruits) WithSafe(safe bool) *ArraysSchemaFruits {
+	return &ArraysSchemaFruits{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r ArraysSchemaFruits) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -1027,6 +1167,7 @@ func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1063,6 +1204,12 @@ func (r ArraysSchemaVegetables) Copy() *ArraysSchemaVegetables {
 	}
 }
 
+func (r ArraysSchemaVegetables) WithSafe(safe bool) *ArraysSchemaVegetables {
+	return &ArraysSchemaVegetables{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r ArraysSchemaVegetables) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -1090,6 +1237,12 @@ func (r Bool) Copy() *Bool {
 	}
 }
 
+func (r Bool) WithSafe(safe bool) *Bool {
+	return &Bool{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r Bool) typeDefaultJson() []byte {
 	return []byte("")
 }
@@ -1112,6 +1265,7 @@ func (r *DNestedTitle1) GetD1() *String {
 			_path:   pathJoin(r._path, "d1"),
 			_parent: r.__node,
 			_ppath:  "d1",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1119,6 +1273,12 @@ func (r *DNestedTitle1) GetD1() *String {
 func (r DNestedTitle1) Copy() *DNestedTitle1 {
 	return &DNestedTitle1{
 		__node: r.copy(),
+	}
+}
+
+func (r DNestedTitle1) WithSafe(safe bool) *DNestedTitle1 {
+	return &DNestedTitle1{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1149,6 +1309,12 @@ func (r Float64) Copy() *Float64 {
 	}
 }
 
+func (r Float64) WithSafe(safe bool) *Float64 {
+	return &Float64{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r Float64) typeDefaultJson() []byte {
 	return []byte("")
 }
@@ -1176,6 +1342,12 @@ func (r Int64) Copy() *Int64 {
 	}
 }
 
+func (r Int64) WithSafe(safe bool) *Int64 {
+	return &Int64{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r Int64) typeDefaultJson() []byte {
 	return []byte("")
 }
@@ -1198,6 +1370,7 @@ func (r *LargeFileItems) GetActor() *LargeFileItemsActor {
 			_path:   pathJoin(r._path, "actor"),
 			_parent: r.__node,
 			_ppath:  "actor",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1210,6 +1383,7 @@ func (r *LargeFileItems) GetId() *String {
 			_path:   pathJoin(r._path, "id"),
 			_parent: r.__node,
 			_ppath:  "id",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1222,6 +1396,7 @@ func (r *LargeFileItems) GetType() *String {
 			_path:   pathJoin(r._path, "type"),
 			_parent: r.__node,
 			_ppath:  "type",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1229,6 +1404,12 @@ func (r *LargeFileItems) GetType() *String {
 func (r LargeFileItems) Copy() *LargeFileItems {
 	return &LargeFileItems{
 		__node: r.copy(),
+	}
+}
+
+func (r LargeFileItems) WithSafe(safe bool) *LargeFileItems {
+	return &LargeFileItems{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1254,6 +1435,7 @@ func (r *LargeFileItemsActor) GetAvatar_url() *String {
 			_path:   pathJoin(r._path, "avatar_url"),
 			_parent: r.__node,
 			_ppath:  "avatar_url",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1266,6 +1448,7 @@ func (r *LargeFileItemsActor) GetGravatar_id() *String {
 			_path:   pathJoin(r._path, "gravatar_id"),
 			_parent: r.__node,
 			_ppath:  "gravatar_id",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1278,6 +1461,7 @@ func (r *LargeFileItemsActor) GetId() *Float64 {
 			_path:   pathJoin(r._path, "id"),
 			_parent: r.__node,
 			_ppath:  "id",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1290,6 +1474,7 @@ func (r *LargeFileItemsActor) GetLogin() *String {
 			_path:   pathJoin(r._path, "login"),
 			_parent: r.__node,
 			_ppath:  "login",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1302,6 +1487,7 @@ func (r *LargeFileItemsActor) GetUrl() *String {
 			_path:   pathJoin(r._path, "url"),
 			_parent: r.__node,
 			_ppath:  "url",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1309,6 +1495,12 @@ func (r *LargeFileItemsActor) GetUrl() *String {
 func (r LargeFileItemsActor) Copy() *LargeFileItemsActor {
 	return &LargeFileItemsActor{
 		__node: r.copy(),
+	}
+}
+
+func (r LargeFileItemsActor) WithSafe(safe bool) *LargeFileItemsActor {
+	return &LargeFileItemsActor{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1339,6 +1531,7 @@ func (r *LargeFileLargeFile) At(i int) *LargeFileItems {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1375,6 +1568,12 @@ func (r LargeFileLargeFile) Copy() *LargeFileLargeFile {
 	}
 }
 
+func (r LargeFileLargeFile) WithSafe(safe bool) *LargeFileLargeFile {
+	return &LargeFileLargeFile{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r LargeFileLargeFile) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -1402,6 +1601,7 @@ func (r *NestedarraysField1) At(i int) *NestedarraysField1Items {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1438,6 +1638,12 @@ func (r NestedarraysField1) Copy() *NestedarraysField1 {
 	}
 }
 
+func (r NestedarraysField1) WithSafe(safe bool) *NestedarraysField1 {
+	return &NestedarraysField1{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r NestedarraysField1) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -1460,6 +1666,7 @@ func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
 			_path:   pathJoin(r._path, "field2"),
 			_parent: r.__node,
 			_ppath:  "field2",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1467,6 +1674,12 @@ func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
 func (r NestedarraysField1Items) Copy() *NestedarraysField1Items {
 	return &NestedarraysField1Items{
 		__node: r.copy(),
+	}
+}
+
+func (r NestedarraysField1Items) WithSafe(safe bool) *NestedarraysField1Items {
+	return &NestedarraysField1Items{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1497,6 +1710,7 @@ func (r *NestedarraysField1ItemsField2) At(i int) *SomeTitle {
 			_path:   pathJoin(r._path, strconv.Itoa(i)),
 			_parent: r.__node,
 			_ppath:  strconv.Itoa(i),
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1533,6 +1747,12 @@ func (r NestedarraysField1ItemsField2) Copy() *NestedarraysField1ItemsField2 {
 	}
 }
 
+func (r NestedarraysField1ItemsField2) WithSafe(safe bool) *NestedarraysField1ItemsField2 {
+	return &NestedarraysField1ItemsField2{
+		__node: r.__node.withSafe(safe),
+	}
+}
+
 func (r NestedarraysField1ItemsField2) typeDefaultJson() []byte {
 	return []byte("[]")
 }
@@ -1555,6 +1775,7 @@ func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
 			_path:   pathJoin(r._path, "field1"),
 			_parent: r.__node,
 			_ppath:  "field1",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1562,6 +1783,12 @@ func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
 func (r NestedarraysNestedarrays) Copy() *NestedarraysNestedarrays {
 	return &NestedarraysNestedarrays{
 		__node: r.copy(),
+	}
+}
+
+func (r NestedarraysNestedarrays) WithSafe(safe bool) *NestedarraysNestedarrays {
+	return &NestedarraysNestedarrays{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1587,6 +1814,7 @@ func (r *OneOf) GetData() *OneofData {
 			_path:   pathJoin(r._path, "data"),
 			_parent: r.__node,
 			_ppath:  "data",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1594,6 +1822,12 @@ func (r *OneOf) GetData() *OneofData {
 func (r OneOf) Copy() *OneOf {
 	return &OneOf{
 		__node: r.copy(),
+	}
+}
+
+func (r OneOf) WithSafe(safe bool) *OneOf {
+	return &OneOf{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1619,6 +1853,7 @@ func (r *OneOfRootObj) AsPerson() *Person {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1631,6 +1866,7 @@ func (r *OneOfRootObj) AsVehicle() *Vehicle {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1638,6 +1874,12 @@ func (r *OneOfRootObj) AsVehicle() *Vehicle {
 func (r OneOfRootObj) Copy() *OneOfRootObj {
 	return &OneOfRootObj{
 		__node: r.copy(),
+	}
+}
+
+func (r OneOfRootObj) WithSafe(safe bool) *OneOfRootObj {
+	return &OneOfRootObj{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1663,6 +1905,7 @@ func (r *OneofData) AsPerson() *Person {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1675,6 +1918,7 @@ func (r *OneofData) AsVehicle() *Vehicle {
 			_path:   r._path,
 			_parent: r._parent,
 			_ppath:  r._ppath,
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1682,6 +1926,12 @@ func (r *OneofData) AsVehicle() *Vehicle {
 func (r OneofData) Copy() *OneofData {
 	return &OneofData{
 		__node: r.copy(),
+	}
+}
+
+func (r OneofData) WithSafe(safe bool) *OneofData {
+	return &OneofData{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1707,6 +1957,7 @@ func (r *Person) GetFirstName() *String {
 			_path:   pathJoin(r._path, "firstName"),
 			_parent: r.__node,
 			_ppath:  "firstName",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1719,6 +1970,7 @@ func (r *Person) GetLastName() *String {
 			_path:   pathJoin(r._path, "lastName"),
 			_parent: r.__node,
 			_ppath:  "lastName",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1731,6 +1983,7 @@ func (r *Person) GetSport() *String {
 			_path:   pathJoin(r._path, "sport"),
 			_parent: r.__node,
 			_ppath:  "sport",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1738,6 +1991,12 @@ func (r *Person) GetSport() *String {
 func (r Person) Copy() *Person {
 	return &Person{
 		__node: r.copy(),
+	}
+}
+
+func (r Person) WithSafe(safe bool) *Person {
+	return &Person{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1763,6 +2022,7 @@ func (r *SomeTitle) GetField3() *String {
 			_path:   pathJoin(r._path, "field3"),
 			_parent: r.__node,
 			_ppath:  "field3",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1770,6 +2030,12 @@ func (r *SomeTitle) GetField3() *String {
 func (r SomeTitle) Copy() *SomeTitle {
 	return &SomeTitle{
 		__node: r.copy(),
+	}
+}
+
+func (r SomeTitle) WithSafe(safe bool) *SomeTitle {
+	return &SomeTitle{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1783,7 +2049,11 @@ type String struct {
 
 func (r String) Value() string {
 	res := r.result()
-	return res.String()
+	v := res.String()
+	if r._safe {
+		v = strings.Clone(v)
+	}
+	return v
 }
 func (r *String) Set(v string) error {
 	b, err := json.Marshal(v)
@@ -1797,6 +2067,12 @@ func (r *String) Set(v string) error {
 func (r String) Copy() *String {
 	return &String{
 		__node: r.copy(),
+	}
+}
+
+func (r String) WithSafe(safe bool) *String {
+	return &String{
+		__node: r.__node.withSafe(safe),
 	}
 }
 
@@ -1822,6 +2098,7 @@ func (r *Vehicle) GetBrand() *String {
 			_path:   pathJoin(r._path, "brand"),
 			_parent: r.__node,
 			_ppath:  "brand",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1834,6 +2111,7 @@ func (r *Vehicle) GetPrice() *Int64 {
 			_path:   pathJoin(r._path, "price"),
 			_parent: r.__node,
 			_ppath:  "price",
+			_safe:   r._safe,
 		},
 	}
 }
@@ -1841,6 +2119,12 @@ func (r *Vehicle) GetPrice() *Int64 {
 func (r Vehicle) Copy() *Vehicle {
 	return &Vehicle{
 		__node: r.copy(),
+	}
+}
+
+func (r Vehicle) WithSafe(safe bool) *Vehicle {
+	return &Vehicle{
+		__node: r.__node.withSafe(safe),
 	}
 }
 

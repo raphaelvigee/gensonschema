@@ -41,7 +41,15 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 				__node: r.copy(),
 			}
 	}
-	`, s.name, strconv.Quote(defaultJson)))
+	`, s.name))
+
+	s.methods = append(s.methods, fmt.Sprintf(`
+	func (r %[1]v) WithSafe(safe bool) *%[1]v {
+			return &%[1]v{ 
+				__node: r.__node.withSafe(safe),
+			}
+	}
+	`, s.name))
 
 	s.methods = append(s.methods, fmt.Sprintf(`
 	func (r %v) typeDefaultJson() []byte {
@@ -51,11 +59,24 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
-			s.methods = append(s.methods, fmt.Sprintf(`
-			func (r %v) Value() %v {
-				res := r.result()
-				return res.%v
-			}`, s.name, typ, accessor))
+			if accessor == "String()" {
+				s.methods = append(s.methods, fmt.Sprintf(`
+				func (r %v) Value() %v {
+					res := r.result()
+					v := res.%v
+					if r._safe {
+						v = strings.Clone(v)
+					}
+					return v
+				}`, s.name, typ, accessor))
+			} else {
+				s.methods = append(s.methods, fmt.Sprintf(`
+				func (r %v) Value() %v {
+					res := r.result()
+					return res.%v
+				}`, s.name, typ, accessor))
+			}
+
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Value() %v {
@@ -105,6 +126,7 @@ func (s *structType) AddGetter(name, path, styp string) {
 					_path: pathJoin(r._path, %q),
 					_parent: r.__node,
 					_ppath: %q,
+					_safe: r._safe,
 				},
 			}
 		}
@@ -121,6 +143,7 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 					_path: pathJoin(r._path, strconv.Itoa(i)),
 					_parent: r.__node,
 					_ppath: strconv.Itoa(i),
+					_safe: r._safe,
 				},
 			}
 		}
@@ -187,6 +210,7 @@ func (s *structType) AddAsGetter(name, styp string) {
 					_path: r._path,
 					_parent: r._parent,
 					_ppath: r._ppath,
+					_safe: r._safe,
 				},
 			}
 		}

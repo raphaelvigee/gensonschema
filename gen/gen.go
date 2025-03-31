@@ -62,28 +62,19 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 			if accessor == "String()" {
 				s.methods = append(s.methods, fmt.Sprintf(`
 				func (r %v) Value() %v {
-					res := r.result()
-					v := res.%v
-					if r._safe {
-						v = strings.Clone(v)
-					}
-					return v
-				}`, s.name, typ, accessor))
+					return node_value_string(r.__node)
+				}`, s.name, typ))
 			} else {
 				s.methods = append(s.methods, fmt.Sprintf(`
 				func (r %v) Value() %v {
-					res := r.result()
-					return res.%v
+					return r.result().%v
 				}`, s.name, typ, accessor))
 			}
 
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Value() %v {
-				res := r.result()
-				var v %v
-				_ = json.Unmarshal([]byte(res.Raw), &v)
-				return v
+				return node_value_struct[%v](r.__node)
 			}`, s.name, typ, typ))
 		}
 
@@ -120,34 +111,22 @@ func (s *structType) AddGetter(name, path, styp string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Get%v() *%v {
 			r.ensureJson()
-			return &%v{ 
-				__node[%v]{
-					_data: r._data,
-					_path: pathJoin(r._path, %q),
-					_parent: r.__node,
-					_ppath: %q,
-					_safe: r._safe,
-				},
+			return &%v{
+				__node: node_get[%v, %v](r.__node, %q),
 			}
 		}
-	`, s.name, name, styp, styp, styp, path, path))
+	`, s.name, name, styp, styp, s.name, styp, path))
 }
 
 func (s *structType) AddIndexGetter(styp string, dtype string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) At(i int) *%v {
 			r.ensureJson()
-			return &%v{ 
-				__node[%v]{
-					_data: r._data,
-					_path: pathJoin(r._path, strconv.Itoa(i)),
-					_parent: r.__node,
-					_ppath: strconv.Itoa(i),
-					_safe: r._safe,
-				},
+			return &%v{
+				__node: node_get[%v, %v](r.__node, strconv.Itoa(i)),
 			}
 		}
-	`, s.name, styp, styp, styp))
+	`, s.name, styp, styp, s.name, styp))
 	appendType := "*" + styp
 	if dtype != "" {
 		appendType = dtype
@@ -160,9 +139,7 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	`, s.name, appendType))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Len() int {
-			res := r.result()
-			if !res.IsArray() { return 0 }
-			return int(res.Get("#").Int())
+			return node_array_len(r.__node)
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
@@ -172,17 +149,7 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Range() func(yield func(int, *%v) bool) {
-			return func(yield func(int, *%v) bool) {
-				l := r.Len()
-
-				for i := 0; i < l; i++ {
-					v := r.At(i)
-		
-					if !yield(i, v) {
-						break
-					}
-				}
-			}
+			return node_array_range[*%v](&r)
 		}
 	`, s.name, styp, styp))
 }
@@ -205,16 +172,10 @@ func (s *structType) AddAsGetter(name, styp string) {
 		func (r *%v) As%v() *%v {
 			r.ensureJson()
 			return &%v{ 
-				__node[%v]{
-					_data: r._data,
-					_path: r._path,
-					_parent: r._parent,
-					_ppath: r._ppath,
-					_safe: r._safe,
-				},
+				__node: node_get_as[%v, %v](r.__node),
 			}
 		}
-	`, s.name, name, styp, styp, styp))
+	`, s.name, name, styp, styp, s.name, styp))
 }
 
 type StructField struct {

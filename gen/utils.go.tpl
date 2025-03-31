@@ -18,6 +18,11 @@ type __delegate interface {
     typeDefaultJson() []byte
 }
 
+type __node_array[T any] interface {
+    Len() int
+    At(i int) T
+}
+
 type __data struct {
     _json string
     _c atomic.Uint64
@@ -38,6 +43,66 @@ type __node[D __delegate] struct {
 	_rjson string
 
 	_safe bool
+}
+
+func node_get[F, T __delegate](from __node[F], path string) __node[T] {
+	return __node[T]{
+        _data:   from._data,
+        _path:   pathJoin(from._path, path),
+        _parent: from,
+        _ppath:  path,
+        _safe:   from._safe,
+    }
+}
+
+func node_get_as[F, T __delegate](r __node[F]) __node[T] {
+    return __node[T]{
+        _data: r._data,
+        _path: r._path,
+        _parent: r._parent,
+        _ppath: r._ppath,
+        _safe: r._safe,
+    }
+}
+
+func node_array_range[T any](r __node_array[T]) func(yield func(int, T) bool) {
+    return func(yield func(int, T) bool) {
+        l := r.Len()
+
+        for i := 0; i < l; i++ {
+            v := r.At(i)
+
+            if !yield(i, v) {
+                break
+            }
+        }
+    }
+}
+
+type __node_result interface {
+	result() gjson.Result
+}
+
+func node_array_len(r __node_result) int {
+    res := r.result()
+    if !res.IsArray() { return 0 }
+    return int(res.Get("#").Int())
+}
+
+func node_value_string[T __delegate](r __node[T]) string {
+    v := r.result().String()
+    if r._safe {
+        v = strings.Clone(v)
+    }
+
+	return v
+}
+
+func node_value_struct[T any](r __node_result) T {
+    res := r.result()
+    var v T
+    _ = json.Unmarshal([]byte(res.Raw), &v)
+    return v
 }
 
 // https://www.reddit.com/r/golang/comments/14xvgoj/converting_string_byte/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button

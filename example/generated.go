@@ -53,7 +53,9 @@ type __node[D __delegate] struct {
 	_safe bool
 }
 
-func node_get[F, T __delegate](from __node[F], path string) __node[T] {
+func node_get[F, T __delegate](from *__node[F], path string) __node[T] {
+	from.ensureJson()
+
 	return __node[T]{
 		_data:   from._data,
 		_path:   pathJoin(from._path, path),
@@ -63,7 +65,9 @@ func node_get[F, T __delegate](from __node[F], path string) __node[T] {
 	}
 }
 
-func node_get_as[F, T __delegate](r __node[F]) __node[T] {
+func node_get_as[F, T __delegate](r *__node[F]) __node[T] {
+	r.ensureJson()
+
 	return __node[T]{
 		_data:   r._data,
 		_path:   r._path,
@@ -292,16 +296,14 @@ func (r AllOf) Set(v *AllOf) error {
 }
 
 func (r *AllOf) GetBilling_address() *AllofDefinitionsAddress {
-	r.ensureJson()
 	return &AllofDefinitionsAddress{
-		__node: node_get[AllOf, AllofDefinitionsAddress](r.__node, "billing_address"),
+		__node: node_get[AllOf, AllofDefinitionsAddress](&r.__node, "billing_address"),
 	}
 }
 
 func (r *AllOf) GetShipping_address() *AllofShipping_address {
-	r.ensureJson()
 	return &AllofShipping_address{
-		__node: node_get[AllOf, AllofShipping_address](r.__node, "shipping_address"),
+		__node: node_get[AllOf, AllofShipping_address](&r.__node, "shipping_address"),
 	}
 }
 
@@ -332,9 +334,8 @@ func (r AllOfOneOf) Set(v *AllOfOneOf) error {
 }
 
 func (r *AllOfOneOf) GetData() *AllofoneofData {
-	r.ensureJson()
 	return &AllofoneofData{
-		__node: node_get[AllOfOneOf, AllofoneofData](r.__node, "data"),
+		__node: node_get[AllOfOneOf, AllofoneofData](&r.__node, "data"),
 	}
 }
 
@@ -365,9 +366,8 @@ func (r AllofDefinitionsAddress) Set(v *AllofDefinitionsAddress) error {
 }
 
 func (r *AllofDefinitionsAddress) GetCity() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofDefinitionsAddress, String](r.__node, "city"),
+		__node: node_get[AllofDefinitionsAddress, String](&r.__node, "city"),
 	}
 }
 
@@ -398,16 +398,14 @@ func (r AllofShipping_address) Set(v *AllofShipping_address) error {
 }
 
 func (r *AllofShipping_address) GetCity() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofShipping_address, String](r.__node, "city"),
+		__node: node_get[AllofShipping_address, String](&r.__node, "city"),
 	}
 }
 
 func (r *AllofShipping_address) GetType() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofShipping_address, String](r.__node, "type"),
+		__node: node_get[AllofShipping_address, String](&r.__node, "type"),
 	}
 }
 
@@ -438,51 +436,44 @@ func (r AllofoneofData) Set(v *AllofoneofData) error {
 }
 
 func (r *AllofoneofData) AsAllOf0OneOf0() *AllofoneofDataAllOf0OneOf0 {
-	r.ensureJson()
 	return &AllofoneofDataAllOf0OneOf0{
-		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf0OneOf0](r.__node),
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf0OneOf0](&r.__node),
 	}
 }
 
 func (r *AllofoneofData) AsAllOf0OneOf1() *AllofoneofDataAllOf0OneOf1 {
-	r.ensureJson()
 	return &AllofoneofDataAllOf0OneOf1{
-		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf0OneOf1](r.__node),
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf0OneOf1](&r.__node),
 	}
 }
 
 func (r *AllofoneofData) AsAllOf3OneOf1() *AllofoneofDataAllOf3OneOf1 {
-	r.ensureJson()
 	return &AllofoneofDataAllOf3OneOf1{
-		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf3OneOf1](r.__node),
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf3OneOf1](&r.__node),
 	}
 }
 
 func (r *AllofoneofData) AsDNestedTitle1() *DNestedTitle1 {
-	r.ensureJson()
 	return &DNestedTitle1{
-		__node: node_get_as[AllofoneofData, DNestedTitle1](r.__node),
+		__node: node_get_as[AllofoneofData, DNestedTitle1](&r.__node),
 	}
 }
 
 func (r *AllofoneofData) AsNamedOneOf0() *AllofoneofDataAllOf2OneOf0 {
-	r.ensureJson()
 	return &AllofoneofDataAllOf2OneOf0{
-		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf2OneOf0](r.__node),
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf2OneOf0](&r.__node),
 	}
 }
 
 func (r *AllofoneofData) AsNamedOneOf1() *AllofoneofDataAllOf2OneOf1 {
-	r.ensureJson()
 	return &AllofoneofDataAllOf2OneOf1{
-		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf2OneOf1](r.__node),
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf2OneOf1](&r.__node),
 	}
 }
 
 func (r *AllofoneofData) GetB() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofoneofData, String](r.__node, "b"),
+		__node: node_get[AllofoneofData, String](&r.__node, "b"),
 	}
 }
 
@@ -513,9 +504,8 @@ func (r AllofoneofDataAllOf0OneOf0) Set(v *AllofoneofDataAllOf0OneOf0) error {
 }
 
 func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofoneofDataAllOf0OneOf0, String](r.__node, "a1"),
+		__node: node_get[AllofoneofDataAllOf0OneOf0, String](&r.__node, "a1"),
 	}
 }
 
@@ -546,9 +536,8 @@ func (r AllofoneofDataAllOf0OneOf1) Set(v *AllofoneofDataAllOf0OneOf1) error {
 }
 
 func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofoneofDataAllOf0OneOf1, String](r.__node, "a2"),
+		__node: node_get[AllofoneofDataAllOf0OneOf1, String](&r.__node, "a2"),
 	}
 }
 
@@ -579,9 +568,8 @@ func (r AllofoneofDataAllOf2OneOf0) Set(v *AllofoneofDataAllOf2OneOf0) error {
 }
 
 func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofoneofDataAllOf2OneOf0, String](r.__node, "c1"),
+		__node: node_get[AllofoneofDataAllOf2OneOf0, String](&r.__node, "c1"),
 	}
 }
 
@@ -612,9 +600,8 @@ func (r AllofoneofDataAllOf2OneOf1) Set(v *AllofoneofDataAllOf2OneOf1) error {
 }
 
 func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofoneofDataAllOf2OneOf1, String](r.__node, "c2"),
+		__node: node_get[AllofoneofDataAllOf2OneOf1, String](&r.__node, "c2"),
 	}
 }
 
@@ -645,9 +632,8 @@ func (r AllofoneofDataAllOf3OneOf1) Set(v *AllofoneofDataAllOf3OneOf1) error {
 }
 
 func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[AllofoneofDataAllOf3OneOf1, String](r.__node, "d2"),
+		__node: node_get[AllofoneofDataAllOf3OneOf1, String](&r.__node, "d2"),
 	}
 }
 
@@ -678,16 +664,14 @@ func (r ArrayArray) Set(v *ArrayArray) error {
 }
 
 func (r *ArrayArray) GetTopfield1() *ArrayTopfield1 {
-	r.ensureJson()
 	return &ArrayTopfield1{
-		__node: node_get[ArrayArray, ArrayTopfield1](r.__node, "topfield1"),
+		__node: node_get[ArrayArray, ArrayTopfield1](&r.__node, "topfield1"),
 	}
 }
 
 func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
-	r.ensureJson()
 	return &ArrayTopfield2{
-		__node: node_get[ArrayArray, ArrayTopfield2](r.__node, "topfield2"),
+		__node: node_get[ArrayArray, ArrayTopfield2](&r.__node, "topfield2"),
 	}
 }
 
@@ -718,16 +702,14 @@ func (r ArrayDefinitionsDef1) Set(v *ArrayDefinitionsDef1) error {
 }
 
 func (r *ArrayDefinitionsDef1) GetField1() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[ArrayDefinitionsDef1, String](r.__node, "field1"),
+		__node: node_get[ArrayDefinitionsDef1, String](&r.__node, "field1"),
 	}
 }
 
 func (r *ArrayDefinitionsDef1) GetField2() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[ArrayDefinitionsDef1, String](r.__node, "field2"),
+		__node: node_get[ArrayDefinitionsDef1, String](&r.__node, "field2"),
 	}
 }
 
@@ -758,14 +740,12 @@ func (r ArrayTopfield1) Set(v *ArrayTopfield1) error {
 }
 
 func (r *ArrayTopfield1) Append(v *ArrayDefinitionsDef1) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
-	r.ensureJson()
 	return &ArrayDefinitionsDef1{
-		__node: node_get[ArrayTopfield1, ArrayDefinitionsDef1](r.__node, strconv.Itoa(i)),
+		__node: node_get[ArrayTopfield1, ArrayDefinitionsDef1](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -778,7 +758,7 @@ func (r ArrayTopfield1) Len() int {
 }
 
 func (r ArrayTopfield1) Range() func(yield func(int, *ArrayDefinitionsDef1) bool) {
-	return node_array_range[*ArrayDefinitionsDef1](&r)
+	return node_array_range(&r)
 }
 
 func (r ArrayTopfield1) Copy() *ArrayTopfield1 {
@@ -805,14 +785,12 @@ func (r ArrayTopfield2) Value() []string {
 	return node_value_struct[[]string](r.__node)
 }
 func (r *ArrayTopfield2) Append(v string) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArrayTopfield2) At(i int) *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[ArrayTopfield2, String](r.__node, strconv.Itoa(i)),
+		__node: node_get[ArrayTopfield2, String](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -834,7 +812,7 @@ func (r ArrayTopfield2) Len() int {
 }
 
 func (r ArrayTopfield2) Range() func(yield func(int, *String) bool) {
-	return node_array_range[*String](&r)
+	return node_array_range(&r)
 }
 
 func (r ArrayTopfield2) Copy() *ArrayTopfield2 {
@@ -864,16 +842,14 @@ func (r ArraysSchemaArraysSchema) Set(v *ArraysSchemaArraysSchema) error {
 }
 
 func (r *ArraysSchemaArraysSchema) GetFruits() *ArraysSchemaFruits {
-	r.ensureJson()
 	return &ArraysSchemaFruits{
-		__node: node_get[ArraysSchemaArraysSchema, ArraysSchemaFruits](r.__node, "fruits"),
+		__node: node_get[ArraysSchemaArraysSchema, ArraysSchemaFruits](&r.__node, "fruits"),
 	}
 }
 
 func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
-	r.ensureJson()
 	return &ArraysSchemaVegetables{
-		__node: node_get[ArraysSchemaArraysSchema, ArraysSchemaVegetables](r.__node, "vegetables"),
+		__node: node_get[ArraysSchemaArraysSchema, ArraysSchemaVegetables](&r.__node, "vegetables"),
 	}
 }
 
@@ -904,16 +880,14 @@ func (r ArraysSchemaDefsVeggie) Set(v *ArraysSchemaDefsVeggie) error {
 }
 
 func (r *ArraysSchemaDefsVeggie) GetVeggieLike() *Bool {
-	r.ensureJson()
 	return &Bool{
-		__node: node_get[ArraysSchemaDefsVeggie, Bool](r.__node, "veggieLike"),
+		__node: node_get[ArraysSchemaDefsVeggie, Bool](&r.__node, "veggieLike"),
 	}
 }
 
 func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[ArraysSchemaDefsVeggie, String](r.__node, "veggieName"),
+		__node: node_get[ArraysSchemaDefsVeggie, String](&r.__node, "veggieName"),
 	}
 }
 
@@ -941,14 +915,12 @@ func (r ArraysSchemaFruits) Value() []string {
 	return node_value_struct[[]string](r.__node)
 }
 func (r *ArraysSchemaFruits) Append(v string) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArraysSchemaFruits) At(i int) *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[ArraysSchemaFruits, String](r.__node, strconv.Itoa(i)),
+		__node: node_get[ArraysSchemaFruits, String](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -970,7 +942,7 @@ func (r ArraysSchemaFruits) Len() int {
 }
 
 func (r ArraysSchemaFruits) Range() func(yield func(int, *String) bool) {
-	return node_array_range[*String](&r)
+	return node_array_range(&r)
 }
 
 func (r ArraysSchemaFruits) Copy() *ArraysSchemaFruits {
@@ -1000,14 +972,12 @@ func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
 }
 
 func (r *ArraysSchemaVegetables) Append(v *ArraysSchemaDefsVeggie) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
-	r.ensureJson()
 	return &ArraysSchemaDefsVeggie{
-		__node: node_get[ArraysSchemaVegetables, ArraysSchemaDefsVeggie](r.__node, strconv.Itoa(i)),
+		__node: node_get[ArraysSchemaVegetables, ArraysSchemaDefsVeggie](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -1020,7 +990,7 @@ func (r ArraysSchemaVegetables) Len() int {
 }
 
 func (r ArraysSchemaVegetables) Range() func(yield func(int, *ArraysSchemaDefsVeggie) bool) {
-	return node_array_range[*ArraysSchemaDefsVeggie](&r)
+	return node_array_range(&r)
 }
 
 func (r ArraysSchemaVegetables) Copy() *ArraysSchemaVegetables {
@@ -1082,9 +1052,8 @@ func (r DNestedTitle1) Set(v *DNestedTitle1) error {
 }
 
 func (r *DNestedTitle1) GetD1() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[DNestedTitle1, String](r.__node, "d1"),
+		__node: node_get[DNestedTitle1, String](&r.__node, "d1"),
 	}
 }
 
@@ -1179,23 +1148,20 @@ func (r LargeFileItems) Set(v *LargeFileItems) error {
 }
 
 func (r *LargeFileItems) GetActor() *LargeFileItemsActor {
-	r.ensureJson()
 	return &LargeFileItemsActor{
-		__node: node_get[LargeFileItems, LargeFileItemsActor](r.__node, "actor"),
+		__node: node_get[LargeFileItems, LargeFileItemsActor](&r.__node, "actor"),
 	}
 }
 
 func (r *LargeFileItems) GetId() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[LargeFileItems, String](r.__node, "id"),
+		__node: node_get[LargeFileItems, String](&r.__node, "id"),
 	}
 }
 
 func (r *LargeFileItems) GetType() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[LargeFileItems, String](r.__node, "type"),
+		__node: node_get[LargeFileItems, String](&r.__node, "type"),
 	}
 }
 
@@ -1226,37 +1192,32 @@ func (r LargeFileItemsActor) Set(v *LargeFileItemsActor) error {
 }
 
 func (r *LargeFileItemsActor) GetAvatar_url() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[LargeFileItemsActor, String](r.__node, "avatar_url"),
+		__node: node_get[LargeFileItemsActor, String](&r.__node, "avatar_url"),
 	}
 }
 
 func (r *LargeFileItemsActor) GetGravatar_id() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[LargeFileItemsActor, String](r.__node, "gravatar_id"),
+		__node: node_get[LargeFileItemsActor, String](&r.__node, "gravatar_id"),
 	}
 }
 
 func (r *LargeFileItemsActor) GetId() *Float64 {
-	r.ensureJson()
 	return &Float64{
-		__node: node_get[LargeFileItemsActor, Float64](r.__node, "id"),
+		__node: node_get[LargeFileItemsActor, Float64](&r.__node, "id"),
 	}
 }
 
 func (r *LargeFileItemsActor) GetLogin() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[LargeFileItemsActor, String](r.__node, "login"),
+		__node: node_get[LargeFileItemsActor, String](&r.__node, "login"),
 	}
 }
 
 func (r *LargeFileItemsActor) GetUrl() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[LargeFileItemsActor, String](r.__node, "url"),
+		__node: node_get[LargeFileItemsActor, String](&r.__node, "url"),
 	}
 }
 
@@ -1287,14 +1248,12 @@ func (r LargeFileLargeFile) Set(v *LargeFileLargeFile) error {
 }
 
 func (r *LargeFileLargeFile) Append(v *LargeFileItems) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *LargeFileLargeFile) At(i int) *LargeFileItems {
-	r.ensureJson()
 	return &LargeFileItems{
-		__node: node_get[LargeFileLargeFile, LargeFileItems](r.__node, strconv.Itoa(i)),
+		__node: node_get[LargeFileLargeFile, LargeFileItems](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -1307,7 +1266,7 @@ func (r LargeFileLargeFile) Len() int {
 }
 
 func (r LargeFileLargeFile) Range() func(yield func(int, *LargeFileItems) bool) {
-	return node_array_range[*LargeFileItems](&r)
+	return node_array_range(&r)
 }
 
 func (r LargeFileLargeFile) Copy() *LargeFileLargeFile {
@@ -1337,14 +1296,12 @@ func (r NestedarraysField1) Set(v *NestedarraysField1) error {
 }
 
 func (r *NestedarraysField1) Append(v *NestedarraysField1Items) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *NestedarraysField1) At(i int) *NestedarraysField1Items {
-	r.ensureJson()
 	return &NestedarraysField1Items{
-		__node: node_get[NestedarraysField1, NestedarraysField1Items](r.__node, strconv.Itoa(i)),
+		__node: node_get[NestedarraysField1, NestedarraysField1Items](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -1357,7 +1314,7 @@ func (r NestedarraysField1) Len() int {
 }
 
 func (r NestedarraysField1) Range() func(yield func(int, *NestedarraysField1Items) bool) {
-	return node_array_range[*NestedarraysField1Items](&r)
+	return node_array_range(&r)
 }
 
 func (r NestedarraysField1) Copy() *NestedarraysField1 {
@@ -1387,9 +1344,8 @@ func (r NestedarraysField1Items) Set(v *NestedarraysField1Items) error {
 }
 
 func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
-	r.ensureJson()
 	return &NestedarraysField1ItemsField2{
-		__node: node_get[NestedarraysField1Items, NestedarraysField1ItemsField2](r.__node, "field2"),
+		__node: node_get[NestedarraysField1Items, NestedarraysField1ItemsField2](&r.__node, "field2"),
 	}
 }
 
@@ -1420,14 +1376,12 @@ func (r NestedarraysField1ItemsField2) Set(v *NestedarraysField1ItemsField2) err
 }
 
 func (r *NestedarraysField1ItemsField2) Append(v *SomeTitle) error {
-	r.ensureJson()
 	return r.At(-1).Set(v)
 }
 
 func (r *NestedarraysField1ItemsField2) At(i int) *SomeTitle {
-	r.ensureJson()
 	return &SomeTitle{
-		__node: node_get[NestedarraysField1ItemsField2, SomeTitle](r.__node, strconv.Itoa(i)),
+		__node: node_get[NestedarraysField1ItemsField2, SomeTitle](&r.__node, strconv.Itoa(i)),
 	}
 }
 
@@ -1440,7 +1394,7 @@ func (r NestedarraysField1ItemsField2) Len() int {
 }
 
 func (r NestedarraysField1ItemsField2) Range() func(yield func(int, *SomeTitle) bool) {
-	return node_array_range[*SomeTitle](&r)
+	return node_array_range(&r)
 }
 
 func (r NestedarraysField1ItemsField2) Copy() *NestedarraysField1ItemsField2 {
@@ -1470,9 +1424,8 @@ func (r NestedarraysNestedarrays) Set(v *NestedarraysNestedarrays) error {
 }
 
 func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
-	r.ensureJson()
 	return &NestedarraysField1{
-		__node: node_get[NestedarraysNestedarrays, NestedarraysField1](r.__node, "field1"),
+		__node: node_get[NestedarraysNestedarrays, NestedarraysField1](&r.__node, "field1"),
 	}
 }
 
@@ -1503,9 +1456,8 @@ func (r OneOf) Set(v *OneOf) error {
 }
 
 func (r *OneOf) GetData() *OneofData {
-	r.ensureJson()
 	return &OneofData{
-		__node: node_get[OneOf, OneofData](r.__node, "data"),
+		__node: node_get[OneOf, OneofData](&r.__node, "data"),
 	}
 }
 
@@ -1536,16 +1488,14 @@ func (r OneOfRootObj) Set(v *OneOfRootObj) error {
 }
 
 func (r *OneOfRootObj) AsPerson() *Person {
-	r.ensureJson()
 	return &Person{
-		__node: node_get_as[OneOfRootObj, Person](r.__node),
+		__node: node_get_as[OneOfRootObj, Person](&r.__node),
 	}
 }
 
 func (r *OneOfRootObj) AsVehicle() *Vehicle {
-	r.ensureJson()
 	return &Vehicle{
-		__node: node_get_as[OneOfRootObj, Vehicle](r.__node),
+		__node: node_get_as[OneOfRootObj, Vehicle](&r.__node),
 	}
 }
 
@@ -1576,16 +1526,14 @@ func (r OneofData) Set(v *OneofData) error {
 }
 
 func (r *OneofData) AsPerson() *Person {
-	r.ensureJson()
 	return &Person{
-		__node: node_get_as[OneofData, Person](r.__node),
+		__node: node_get_as[OneofData, Person](&r.__node),
 	}
 }
 
 func (r *OneofData) AsVehicle() *Vehicle {
-	r.ensureJson()
 	return &Vehicle{
-		__node: node_get_as[OneofData, Vehicle](r.__node),
+		__node: node_get_as[OneofData, Vehicle](&r.__node),
 	}
 }
 
@@ -1616,23 +1564,20 @@ func (r Person) Set(v *Person) error {
 }
 
 func (r *Person) GetFirstName() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[Person, String](r.__node, "firstName"),
+		__node: node_get[Person, String](&r.__node, "firstName"),
 	}
 }
 
 func (r *Person) GetLastName() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[Person, String](r.__node, "lastName"),
+		__node: node_get[Person, String](&r.__node, "lastName"),
 	}
 }
 
 func (r *Person) GetSport() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[Person, String](r.__node, "sport"),
+		__node: node_get[Person, String](&r.__node, "sport"),
 	}
 }
 
@@ -1663,9 +1608,8 @@ func (r SomeTitle) Set(v *SomeTitle) error {
 }
 
 func (r *SomeTitle) GetField3() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[SomeTitle, String](r.__node, "field3"),
+		__node: node_get[SomeTitle, String](&r.__node, "field3"),
 	}
 }
 
@@ -1728,16 +1672,14 @@ func (r Vehicle) Set(v *Vehicle) error {
 }
 
 func (r *Vehicle) GetBrand() *String {
-	r.ensureJson()
 	return &String{
-		__node: node_get[Vehicle, String](r.__node, "brand"),
+		__node: node_get[Vehicle, String](&r.__node, "brand"),
 	}
 }
 
 func (r *Vehicle) GetPrice() *Int64 {
-	r.ensureJson()
 	return &Int64{
-		__node: node_get[Vehicle, Int64](r.__node, "price"),
+		__node: node_get[Vehicle, Int64](&r.__node, "price"),
 	}
 }
 

@@ -110,9 +110,8 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 func (s *structType) AddGetter(name, path, styp string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Get%v() *%v {
-			r.ensureJson()
 			return &%v{
-				__node: node_get[%v, %v](r.__node, %q),
+				__node: node_get[%v, %v](&r.__node, %q),
 			}
 		}
 	`, s.name, name, styp, styp, s.name, styp, path))
@@ -121,9 +120,8 @@ func (s *structType) AddGetter(name, path, styp string) {
 func (s *structType) AddIndexGetter(styp string, dtype string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) At(i int) *%v {
-			r.ensureJson()
 			return &%v{
-				__node: node_get[%v, %v](r.__node, strconv.Itoa(i)),
+				__node: node_get[%v, %v](&r.__node, strconv.Itoa(i)),
 			}
 		}
 	`, s.name, styp, styp, s.name, styp))
@@ -133,7 +131,6 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	}
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Append(v %v) error {
-			r.ensureJson()
 			return r.At(-1).Set(v)
 		}
 	`, s.name, appendType))
@@ -149,9 +146,9 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Range() func(yield func(int, *%v) bool) {
-			return node_array_range[*%v](&r)
+			return node_array_range(&r)
 		}
-	`, s.name, styp, styp))
+	`, s.name, styp))
 }
 
 func (s *structType) AddAsGetter(name, styp string) {
@@ -170,9 +167,8 @@ func (s *structType) AddAsGetter(name, styp string) {
 
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) As%v() *%v {
-			r.ensureJson()
 			return &%v{ 
-				__node: node_get_as[%v, %v](r.__node),
+				__node: node_get_as[%v, %v](&r.__node),
 			}
 		}
 	`, s.name, name, styp, styp, s.name, styp))

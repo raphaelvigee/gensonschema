@@ -45,7 +45,9 @@ type __node[D __delegate] struct {
 	_safe bool
 }
 
-func node_get[F, T __delegate](from __node[F], path string) __node[T] {
+func node_get[F, T __delegate](from *__node[F], path string) __node[T] {
+    from.ensureJson()
+
 	return __node[T]{
         _data:   from._data,
         _path:   pathJoin(from._path, path),
@@ -55,7 +57,9 @@ func node_get[F, T __delegate](from __node[F], path string) __node[T] {
     }
 }
 
-func node_get_as[F, T __delegate](r __node[F]) __node[T] {
+func node_get_as[F, T __delegate](r *__node[F]) __node[T] {
+    r.ensureJson()
+
     return __node[T]{
         _data: r._data,
         _path: r._path,

@@ -23,10 +23,10 @@ type structType struct {
 }
 
 var wellKnownTypes = map[string]string{
-	"int64":   "Int()",
-	"uint64":  "Uint()",
-	"float64": "Float()",
-	"bool":    "Bool()",
+	"int64":   "(int64)",
+	"uint64":  "(uint64)",
+	"float64": "(float64)",
+	"bool":    "(bool)",
 	"string":  "String()",
 }
 
@@ -74,33 +74,26 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Value() %v {
-				return node_value_struct[%v](r.__node)
+				return node_value_struct[%v](&r.__node)
 			}`, s.name, typ, typ))
 		}
 
 		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Set(v %v) error {
-			b, err := json.Marshal(v)
-			if err != nil { return err }
-
-			return r.setb(b)
+			return r.setv(v)
 		}
 		`, s.name, typ))
 	} else {
 		if mergeSet {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Set(v *%v) error {
-				incoming := v.currentJson()
-
-				return r.setMerge(incoming)
+				return r.setMerge(v)
 			}
 			`, s.name, s.name))
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Set(v *%v) error {
-				incoming := v.currentJson()
-
-				return r.set(incoming)
+				return r.setv(v)
 			}
 			`, s.name, s.name))
 		}
@@ -121,7 +114,7 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) At(i int) *%v {
 			return &%v{
-				__node: node_get[%v, %v](&r.__node, strconv.Itoa(i)),
+				__node: node_at[%v, %v](&r.__node, i),
 			}
 		}
 	`, s.name, styp, styp, s.name, styp))
@@ -131,12 +124,12 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	}
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Append(v %v) error {
-			return r.At(-1).Set(v)
+			return r.At(r.Len()).Set(v)
 		}
 	`, s.name, appendType))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Len() int {
-			return node_array_len(r.__node)
+			return node_array_len(&r.__node)
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
@@ -146,9 +139,9 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Range() func(yield func(int, *%v) bool) {
-			return node_array_range(&r)
+			return node_array_range[*%v](&r)
 		}
-	`, s.name, styp))
+	`, s.name, styp, styp))
 }
 
 func (s *structType) AddAsGetter(name, styp string) {
@@ -599,8 +592,7 @@ func Gen(config Config) error {
 		return err
 	}
 
-	g.imports["github.com/tidwall/gjson"] = struct{}{}
-	g.imports["github.com/tidwall/sjson"] = struct{}{}
+	g.imports["github.com/ohler55/ojg/jp"] = struct{}{}
 	g.imports["encoding/json"] = struct{}{}
 	g.imports["sync/atomic"] = struct{}{}
 	g.imports["strconv"] = struct{}{}

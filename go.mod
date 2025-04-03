@@ -3,6 +3,7 @@ module github.com/raphaelvigee/gensonschema
 go 1.22
 
 require (
+	github.com/ohler55/ojg v1.26.1
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/stretchr/testify v1.9.0
 	github.com/tidwall/gjson v1.18.0

@@ -2,8 +2,13 @@ package tpl
 
 import (
     "bytes"
+    "fmt"
+    "github.com/ohler55/ojg/gen"
+    "github.com/ohler55/ojg/oj"
+    "strconv"
     "sync/atomic"
     "unsafe"
+    "github.com/ohler55/ojg/jp"
 )
 
 func pathJoin(p1, p2 string) string {
@@ -24,17 +29,17 @@ type __node_array[T any] interface {
 }
 
 type __data struct {
-    _json string
+    _data any
     _c atomic.Uint64
 }
 
 type __node_interface interface {
-    currentJson() string
+    JSON() []byte
 }
 
 type __node[D __delegate] struct {
 	_data *__data
-	_path string
+	_path jp.Expr
 
 	_parent __node_interface
 	_ppath string
@@ -45,12 +50,32 @@ type __node[D __delegate] struct {
 	_safe bool
 }
 
+func node_path[F __delegate](from *__node[F]) jp.Expr {
+    if from._path == nil {
+		return jp.R()
+    }
+
+	return from._path
+}
+
+func node_at[F, T __delegate](from *__node[F], n int) __node[T] {
+    from.ensureData()
+
+    return __node[T]{
+        _data:   from._data,
+        _path:   node_path(from).N(n),
+        _parent: from,
+        _ppath:  strconv.Itoa(n),
+        _safe:   from._safe,
+    }
+}
+
 func node_get[F, T __delegate](from *__node[F], path string) __node[T] {
-    from.ensureJson()
+    from.ensureData()
 
 	return __node[T]{
         _data:   from._data,
-        _path:   pathJoin(from._path, path),
+        _path:   node_path(from).C(path),
         _parent: from,
         _ppath:  path,
         _safe:   from._safe,
@@ -58,7 +83,7 @@ func node_get[F, T __delegate](from *__node[F], path string) __node[T] {
 }
 
 func node_get_as[F, T __delegate](r *__node[F]) __node[T] {
-    r.ensureJson()
+    r.ensureData()
 
     return __node[T]{
         _data: r._data,
@@ -84,17 +109,23 @@ func node_array_range[T any](r __node_array[T]) func(yield func(int, T) bool) {
 }
 
 type __node_result interface {
-	result() gjson.Result
+	result() any
 }
 
 func node_array_len(r __node_result) int {
-    res := r.result()
+    // TODO: optimize to use parent cache
+
+	//jp.Length(jp.C(r._path))
+
+	return 0
+
+    /*res := r.result()
     if !res.IsArray() { return 0 }
-    return int(res.Get("#").Int())
+    return int(res.Get("#").Int())*/
 }
 
 func node_value_string[T __delegate](r __node[T]) string {
-    v := r.result().String()
+    v, _ := r.result().(string)
     if r._safe {
         v = strings.Clone(v)
     }
@@ -103,22 +134,29 @@ func node_value_string[T __delegate](r __node[T]) string {
 }
 
 func node_value_struct[T any](r __node_result) T {
-    res := r.result()
+    data := r.result()
+
+    b, err := oj.Marshal(data)
+    if err != nil {
+        panic(err)
+    }
+
     var v T
-    _ = json.Unmarshal([]byte(res.Raw), &v)
+    _ = oj.Unmarshal(b, &v)
+
     return v
 }
 
 // https://www.reddit.com/r/golang/comments/14xvgoj/converting_string_byte/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
 func (r __node[D]) unsafeGetBytes(s string) []byte {
-	return unsafe.Slice(unsafe.StringData(s), len(s))
+    return unsafe.Slice(unsafe.StringData(s), len(s))
 }
 
 func (r __node[D]) unsafeGetString(b []byte) string {
     return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
-func (r __node[D]) currentJsonb() []byte {
+/*func (r __node[D]) currentJsonb() []byte {
 	return r.unsafeGetBytes(r.currentJson())
 }
 
@@ -137,14 +175,15 @@ func (r __node[D]) currentJson() string {
 	r._rjson = res.Raw
 
     return r._rjson
-}
+}*/
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
-    return r.JSON(), nil
+	return oj.Marshal(r.result())
 }
 
 func (r __node[D]) JSON() []byte {
-    return r.currentJsonb()
+    b, _ := oj.Marshal(r.result())
+    return b
 }
 
 func (r __node[D]) withSafe(safe bool) __node[D] {
@@ -153,21 +192,18 @@ func (r __node[D]) withSafe(safe bool) __node[D] {
 }
 
 func (r *__node[D]) newData(b string) *__data {
-    return &__data{_json: b, _c: atomic.Uint64{}}
+    data, err := oj.ParseString(b)
+	if err != nil {
+		panic(err)
+    }
+
+    return &__data{_data: data, _c: atomic.Uint64{}}
 }
 
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
     if r._data != nil {
-        if r._path == "" {
-            r.setJson(r.unsafeGetString(b))
-            return nil
-        }
+		r.set(r.unsafeGetString(b))
 
-        njson, err := sjson.SetRaw(r.json(), r.path(), string(b))
-        if err != nil {
-            return err
-        }
-        r.setJson(njson)
         return nil
     }
 
@@ -175,78 +211,69 @@ func (r *__node[D]) UnmarshalJSON(b []byte) error {
     return nil
 }
 
-func (r __node[D]) json() string {
+func (r __node[D]) Path() string {
+    return r._path.String()
+}
+
+func (r *__node[D]) ensureData() {
     if r._data == nil {
-        return string(r.defaultJson())
+        r._data = r.newData(string(r.defaultJson()))
     }
-
-    return r._data._json
 }
 
-func (r __node[D]) path() string {
-    return r._path
-}
-
-func (r __node[D]) setJson(v string) {
-    r._data._json = v
-	r._data._c.Add(1)
-}
-
-func (r *__node[D]) ensureJson() {
-    if r._data != nil {
-        return
-    }
-
-    b := r.json()
-    r._data = r.newData(b)
-}
-
-func (r __node[D]) result() gjson.Result {
-	if parent := r._parent; parent != nil {
+func (r *__node[D]) result() any {
+	/*if parent := r._parent; parent != nil {
         return gjson.Get(parent.currentJson(), r._ppath)
-    }
+    }*/
 
-    if r._path == "" {
-        return gjson.Parse(r.json())
-    }
-    return gjson.Get(r.json(), r.path())
-}
+    r.ensureData()
 
-func (r __node[D]) Exists() bool {
-    return r.result().Exists()
-}
-
-func (r __node[D]) Delete() error {
-    res, err := sjson.Delete(r.json(), r.path())
-    if err != nil {
-        return err
-    }
-    r.setJson(res)
-    return nil
-}
-
-func (r *__node[D]) setb(incoming []byte) error {
-    return r.set(r.unsafeGetString(incoming))
-}
-
-func (r *__node[D]) set(incoming string) error {
-    r.ensureJson()
-
-    if r._path == "" {
-        r.setJson(incoming)
+	res := node_path(r).Get(r._data._data)
+	if len(res) == 0 {
         return nil
     }
 
-    res, err := sjson.SetRaw(r.json(), r.path(), incoming)
+    // TODO: optimize to use parent cache
+    return res[0]
+}
+
+func (r *__node[D]) Exists() bool {
+    // TODO: optimize to use parent cache
+    return node_path(r).Has(r._data._data)
+}
+
+func (r *__node[D]) Delete() error {
+    // TODO: optimize to use parent cache
+    return node_path(r).DelOne(r._data._data)
+}
+
+func (r *__node[D]) set(incoming string) error {
+    incomingv, err:= oj.ParseString(incoming)
     if err != nil {
         return err
     }
-    r.setJson(res)
-    return nil
+
+	return r.setv(incomingv)
 }
 
-func (r *__node[D]) setMerge(incoming string) error {
-	current := r.currentJson()
+func (r *__node[D]) setv(incomingv any) error {
+    r.ensureData()
+
+    if node_path(r).String() == jp.R().String() {
+		r._data._data = incomingv
+		r._data._c.Add(1)
+
+		return nil
+    }
+
+	// TODO: optimize to use parent cache
+    return node_path(r).SetOne(r._data._data, incomingv)
+}
+
+func (r *__node[D]) setMerge(incoming any) error {
+	return nil
+
+	/*current := r.currentJson()
 
 	var buf bytes.Buffer
 	buf.Grow(len(current)+len(incoming)+3)
@@ -258,19 +285,20 @@ func (r *__node[D]) setMerge(incoming string) error {
 
     incoming2 := gjson.GetBytes(buf.Bytes(), "@join").Raw
 
-    return r.set(incoming2)
+    return r.set(incoming2)*/
 }
 
 func (r __node[D]) copy() __node[D] {
-    j := r.currentJson()
+	return r
+    /*j := r.currentJson()
 
     return __node[D]{
         _data: r.newData(j),
         _safe: r._safe,
-    }
+    }*/
 }
 
 func (r __node[D]) defaultJson() []byte {
     var d D
-	return d.typeDefaultJson()
+    return d.typeDefaultJson()
 }

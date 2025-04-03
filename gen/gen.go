@@ -23,10 +23,10 @@ type structType struct {
 }
 
 var wellKnownTypes = map[string]string{
-	"int64":   "(int64)",
-	"uint64":  "(uint64)",
-	"float64": "(float64)",
-	"bool":    "(bool)",
+	"int64":   "Int()",
+	"uint64":  "Uint()",
+	"float64": "Float()",
+	"bool":    "Bool()",
 	"string":  "String()",
 }
 
@@ -64,11 +64,23 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 				func (r %v) Value() %v {
 					return node_value_string(r.__node)
 				}`, s.name, typ))
+			} else if accessor == "Bool()" {
+				s.methods = append(s.methods, fmt.Sprintf(`
+				func (r %v) Value() %v {
+					v, _ := r.result().(bool)
+					return v
+				}`, s.name, typ))
 			} else {
 				s.methods = append(s.methods, fmt.Sprintf(`
 				func (r %v) Value() %v {
-					return r.result().%v
-				}`, s.name, typ, accessor))
+					v := reflect.ValueOf(r.result())
+					if !v.Can%v {
+						var zero %v
+						return zero
+					}
+
+					return v.%v
+				}`, s.name, typ, accessor, typ, accessor))
 			}
 
 		} else {

@@ -181,9 +181,11 @@ func TestArray(t *testing.T) {
 
 	_ = obj.GetTopfield1().At(0).GetField2()
 
+	assert.Equal(t, 1, obj.GetTopfield1().Len())
+
 	_ = obj.GetTopfield1().Clear()
 
-	assert.Empty(t, obj.GetTopfield1().Len())
+	assert.Zero(t, obj.GetTopfield1().Len())
 
 	_ = obj.GetTopfield2().Append("hello")
 

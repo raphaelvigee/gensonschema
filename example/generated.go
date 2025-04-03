@@ -114,15 +114,9 @@ type __node_result interface {
 }
 
 func node_array_len(r __node_result) int {
-	// TODO: optimize to use parent cache
+	res, _ := r.result().([]any)
 
-	//jp.Length(jp.C(r._path))
-
-	return 0
-
-	/*res := r.result()
-	  if !res.IsArray() { return 0 }
-	  return int(res.Get("#").Int())*/
+	return len(res)
 }
 
 func node_value_string[T __delegate](r __node[T]) string {

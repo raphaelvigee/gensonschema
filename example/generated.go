@@ -339,9 +339,12 @@ func (r *__node[D]) setMerge(incoming any) error {
 }
 
 func (r __node[D]) copy() __node[D] {
-	// TODO
+	b, err := r.MarshalJSON()
+	if err != nil {
+		panic(err)
+	}
 
-	return r
+	return __node[D]{_data: r.newData(r.unsafeGetString(b))}
 }
 
 func (r __node[D]) defaultJson() []byte {

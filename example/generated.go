@@ -186,7 +186,7 @@ func (r __node[D]) unsafeGetString(b []byte) string {
 }
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
-	return oj.Marshal(r.result(), oj.Options{Sort: true})
+	return oj.Marshal(r.result(), &oj.Options{Sort: true})
 }
 
 func (r __node[D]) JSON() []byte {

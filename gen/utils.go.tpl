@@ -132,7 +132,6 @@ func node_array_set[RD __delegate](r *__node[RD], v any) error {
     if arr == nil {
         arr = make([]any, 0)
     }
-    arr = append(arr, v)
 
     for i := len(arr); i <= int(index); i++ {
         arr = append(arr, nil)

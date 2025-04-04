@@ -197,6 +197,11 @@ func TestArray(t *testing.T) {
 	_ = obj2.GetTopfield2().Append("hello")
 
 	assert.Equal(t, `{"topfield2":["hello"]}`, string(obj2.JSON()))
+
+	_ = obj2.GetTopfield2().At(0).Set("hello")
+
+	assert.Equal(t, `{"topfield2":["hello"]}`, string(obj2.JSON()))
+
 }
 
 func TestNestedArrays(t *testing.T) {

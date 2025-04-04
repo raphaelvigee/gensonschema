@@ -138,7 +138,7 @@ func node_array_append_node[RD, VD __delegate](r *__node[RD], v *__node[VD]) err
 	return node_array_append(r, v.result())
 }
 
-func node_array_append[RD __delegate](r *__node[RD], v any) error {
+func node_array_append(r __node_interface, v any) error {
 	arr, _ := r.result().([]any)
 	if arr == nil {
 		arr = make([]any, 0)
@@ -291,6 +291,20 @@ func (r *__node[D]) set(incoming string) error {
 	return r.setv(incomingv)
 }
 
+func (r *__node[D]) setnode(v __node_interface) error {
+	b, err := oj.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	data, err := oj.Parse(b)
+	if err != nil {
+		return err
+	}
+
+	return r.setv(data)
+}
+
 func (r *__node[D]) setv(incomingv any) error {
 	r.ensureData()
 	r.ensureDataDeep(false)
@@ -303,14 +317,7 @@ func (r *__node[D]) setv(incomingv any) error {
 	}
 
 	if is_setting_array_index(r) {
-		res := r._parent.result()
-		arr, ok := res.([]any)
-		if !ok {
-			arr = make([]any, 0)
-		}
-		arr = append(arr, incomingv)
-
-		return r._parent.setv(arr)
+		return node_array_append(r._parent, incomingv)
 	} else {
 		return node_path(r).SetOne(r._data._data, incomingv)
 	}
@@ -358,7 +365,7 @@ type AllOf struct {
 }
 
 func (r AllOf) Set(v *AllOf) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllOf) GetBilling_address() *AllofDefinitionsAddress {
@@ -394,7 +401,7 @@ type AllOfOneOf struct {
 }
 
 func (r AllOfOneOf) Set(v *AllOfOneOf) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllOfOneOf) GetData() *AllofoneofData {
@@ -424,7 +431,7 @@ type AllofDefinitionsAddress struct {
 }
 
 func (r AllofDefinitionsAddress) Set(v *AllofDefinitionsAddress) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllofDefinitionsAddress) GetCity() *String {
@@ -556,7 +563,7 @@ type AllofoneofDataAllOf0OneOf0 struct {
 }
 
 func (r AllofoneofDataAllOf0OneOf0) Set(v *AllofoneofDataAllOf0OneOf0) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
@@ -586,7 +593,7 @@ type AllofoneofDataAllOf0OneOf1 struct {
 }
 
 func (r AllofoneofDataAllOf0OneOf1) Set(v *AllofoneofDataAllOf0OneOf1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
@@ -616,7 +623,7 @@ type AllofoneofDataAllOf2OneOf0 struct {
 }
 
 func (r AllofoneofDataAllOf2OneOf0) Set(v *AllofoneofDataAllOf2OneOf0) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
@@ -646,7 +653,7 @@ type AllofoneofDataAllOf2OneOf1 struct {
 }
 
 func (r AllofoneofDataAllOf2OneOf1) Set(v *AllofoneofDataAllOf2OneOf1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
@@ -676,7 +683,7 @@ type AllofoneofDataAllOf3OneOf1 struct {
 }
 
 func (r AllofoneofDataAllOf3OneOf1) Set(v *AllofoneofDataAllOf3OneOf1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
@@ -706,7 +713,7 @@ type ArrayArray struct {
 }
 
 func (r ArrayArray) Set(v *ArrayArray) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *ArrayArray) GetTopfield1() *ArrayTopfield1 {
@@ -742,7 +749,7 @@ type ArrayDefinitionsDef1 struct {
 }
 
 func (r ArrayDefinitionsDef1) Set(v *ArrayDefinitionsDef1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *ArrayDefinitionsDef1) GetField1() *String {
@@ -778,7 +785,7 @@ type ArrayTopfield1 struct {
 }
 
 func (r ArrayTopfield1) Set(v *ArrayTopfield1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *ArrayTopfield1) Append(v *ArrayDefinitionsDef1) error {
@@ -873,7 +880,7 @@ type ArraysSchemaArraysSchema struct {
 }
 
 func (r ArraysSchemaArraysSchema) Set(v *ArraysSchemaArraysSchema) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *ArraysSchemaArraysSchema) GetFruits() *ArraysSchemaFruits {
@@ -909,7 +916,7 @@ type ArraysSchemaDefsVeggie struct {
 }
 
 func (r ArraysSchemaDefsVeggie) Set(v *ArraysSchemaDefsVeggie) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *ArraysSchemaDefsVeggie) GetVeggieLike() *Bool {
@@ -994,7 +1001,7 @@ type ArraysSchemaVegetables struct {
 }
 
 func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *ArraysSchemaVegetables) Append(v *ArraysSchemaDefsVeggie) error {
@@ -1068,7 +1075,7 @@ type DNestedTitle1 struct {
 }
 
 func (r DNestedTitle1) Set(v *DNestedTitle1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *DNestedTitle1) GetD1() *String {
@@ -1164,7 +1171,7 @@ type LargeFileItems struct {
 }
 
 func (r LargeFileItems) Set(v *LargeFileItems) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *LargeFileItems) GetActor() *LargeFileItemsActor {
@@ -1206,7 +1213,7 @@ type LargeFileItemsActor struct {
 }
 
 func (r LargeFileItemsActor) Set(v *LargeFileItemsActor) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *LargeFileItemsActor) GetAvatar_url() *String {
@@ -1260,7 +1267,7 @@ type LargeFileLargeFile struct {
 }
 
 func (r LargeFileLargeFile) Set(v *LargeFileLargeFile) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *LargeFileLargeFile) Append(v *LargeFileItems) error {
@@ -1306,7 +1313,7 @@ type NestedarraysField1 struct {
 }
 
 func (r NestedarraysField1) Set(v *NestedarraysField1) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *NestedarraysField1) Append(v *NestedarraysField1Items) error {
@@ -1352,7 +1359,7 @@ type NestedarraysField1Items struct {
 }
 
 func (r NestedarraysField1Items) Set(v *NestedarraysField1Items) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
@@ -1382,7 +1389,7 @@ type NestedarraysField1ItemsField2 struct {
 }
 
 func (r NestedarraysField1ItemsField2) Set(v *NestedarraysField1ItemsField2) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *NestedarraysField1ItemsField2) Append(v *SomeTitle) error {
@@ -1428,7 +1435,7 @@ type NestedarraysNestedarrays struct {
 }
 
 func (r NestedarraysNestedarrays) Set(v *NestedarraysNestedarrays) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
@@ -1458,7 +1465,7 @@ type OneOf struct {
 }
 
 func (r OneOf) Set(v *OneOf) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *OneOf) GetData() *OneofData {
@@ -1488,7 +1495,7 @@ type OneOfRootObj struct {
 }
 
 func (r OneOfRootObj) Set(v *OneOfRootObj) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *OneOfRootObj) AsPerson() *Person {
@@ -1524,7 +1531,7 @@ type OneofData struct {
 }
 
 func (r OneofData) Set(v *OneofData) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *OneofData) AsPerson() *Person {
@@ -1560,7 +1567,7 @@ type Person struct {
 }
 
 func (r Person) Set(v *Person) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *Person) GetFirstName() *String {
@@ -1602,7 +1609,7 @@ type SomeTitle struct {
 }
 
 func (r SomeTitle) Set(v *SomeTitle) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *SomeTitle) GetField3() *String {
@@ -1659,7 +1666,7 @@ type Vehicle struct {
 }
 
 func (r Vehicle) Set(v *Vehicle) error {
-	return r.setv(v)
+	return r.setnode(v)
 }
 
 func (r *Vehicle) GetBrand() *String {

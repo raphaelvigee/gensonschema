@@ -105,7 +105,7 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Set(v *%v) error {
-				return r.setv(v)
+				return r.setnode(v)
 			}
 			`, s.name, s.name))
 		}

@@ -137,7 +137,7 @@ func node_array_append_node[RD, VD __delegate](r *__node[RD], v *__node[VD]) err
 	return node_array_append(r, v.result())
 }
 
-func node_array_append[RD __delegate](r *__node[RD], v any) error {
+func node_array_append(r __node_interface, v any) error {
 	arr, _ := r.result().([]any)
 	if arr == nil {
 		arr = make([]any, 0)
@@ -290,6 +290,20 @@ func (r *__node[D]) set(incoming string) error {
 	return r.setv(incomingv)
 }
 
+func (r *__node[D]) setnode(v __node_interface) error {
+	b, err := oj.Marshal(v)
+	if err != nil {
+		return err
+    }
+
+	data, err := oj.Parse(b)
+    if err != nil {
+        return err
+    }
+
+    return r.setv(data)
+}
+
 func (r *__node[D]) setv(incomingv any) error {
     r.ensureData()
 	r.ensureDataDeep(false)
@@ -302,14 +316,7 @@ func (r *__node[D]) setv(incomingv any) error {
     }
 
 	if is_setting_array_index(r) {
-        res := r._parent.result()
-        arr, ok := res.([]any)
-		if !ok {
-			arr = make([]any, 0)
-        }
-        arr = append(arr, incomingv)
-
-		return r._parent.setv(arr)
+		return node_array_append(r._parent, incomingv)
     } else {
         return node_path(r).SetOne(r._data._data, incomingv)
     }

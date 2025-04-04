@@ -23,11 +23,11 @@ type structType struct {
 }
 
 var wellKnownTypes = map[string]string{
-	"int64":   "Int()",
-	"uint64":  "Uint()",
-	"float64": "Float()",
-	"bool":    "Bool()",
-	"string":  "String()",
+	"int64":   "node_value_int",
+	"uint64":  "node_value_uint",
+	"float64": "node_value_float",
+	"bool":    "node_value_bool",
+	"string":  "node_value_string",
 }
 
 func (s *structType) MakeStore(typ, defaultJson string) {
@@ -58,30 +58,10 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
-			if accessor == "String()" {
-				s.methods = append(s.methods, fmt.Sprintf(`
-				func (r %v) Value() %v {
-					return node_value_string(r.__node)
-				}`, s.name, typ))
-			} else if accessor == "Bool()" {
-				s.methods = append(s.methods, fmt.Sprintf(`
-				func (r %v) Value() %v {
-					v, _ := r.result().(bool)
-					return v
-				}`, s.name, typ))
-			} else {
-				s.methods = append(s.methods, fmt.Sprintf(`
-				func (r %v) Value() %v {
-					v := reflect.ValueOf(r.result())
-					if !v.Can%v {
-						var zero %v
-						return zero
-					}
-
-					return v.%v
-				}`, s.name, typ, accessor, typ, accessor))
-			}
-
+			s.methods = append(s.methods, fmt.Sprintf(`
+			func (r *%v) Value() %v {
+				return %v(r)
+			}`, s.name, typ, accessor))
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Value() %v {

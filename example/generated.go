@@ -89,6 +89,69 @@ func node_get_as[F, T __delegate](r *__node[F]) __node[T] {
 	}
 }
 
+func node_value_float(n __node_interface) float64 {
+	v := reflect.ValueOf(n.result())
+	if v.CanFloat() {
+		return v.Float()
+	}
+
+	if v.CanInt() {
+		return float64(v.Int())
+	}
+
+	if v.CanUint() {
+		return float64(v.Uint())
+	}
+
+	return 0
+}
+
+func node_value_int(n __node_interface) int64 {
+	v := reflect.ValueOf(n.result())
+	if v.CanFloat() {
+		return int64(v.Float())
+	}
+
+	if v.CanInt() {
+		return v.Int()
+	}
+
+	if v.CanUint() {
+		return int64(v.Uint())
+	}
+
+	return 0
+}
+
+func node_value_uint(n __node_interface) uint64 {
+	v := reflect.ValueOf(n.result())
+	if v.CanFloat() {
+		return uint64(v.Float())
+	}
+
+	if v.CanInt() {
+		return uint64(v.Int())
+	}
+
+	if v.CanUint() {
+		return v.Uint()
+	}
+
+	return 0
+}
+
+func node_value_bool(n __node_interface) bool {
+	v, _ := n.result().(bool)
+
+	return v
+}
+
+func node_value_string(n __node_interface) string {
+	v, _ := n.result().(string)
+
+	return v
+}
+
 func node_array_range[T any](r __node_array[T]) func(yield func(int, T) bool) {
 	return func(yield func(int, T) bool) {
 		l := r.Len()
@@ -154,12 +217,6 @@ func node_array_append(r __node_interface, v any) error {
 	arr = append(arr, v)
 
 	return r.setv(arr)
-}
-
-func node_value_string[T __delegate](r __node[T]) string {
-	v, _ := r.result().(string)
-
-	return v
 }
 
 func node_value_struct[T any](r __node_result) T {
@@ -1024,9 +1081,8 @@ type Bool struct {
 	__node[Bool]
 }
 
-func (r Bool) Value() bool {
-	v, _ := r.result().(bool)
-	return v
+func (r *Bool) Value() bool {
+	return node_value_bool(r)
 }
 func (r *Bool) Set(v bool) error {
 	return r.setv(v)
@@ -1080,14 +1136,8 @@ type Float64 struct {
 	__node[Float64]
 }
 
-func (r Float64) Value() float64 {
-	v := reflect.ValueOf(r.result())
-	if !v.CanFloat() {
-		var zero float64
-		return zero
-	}
-
-	return v.Float()
+func (r *Float64) Value() float64 {
+	return node_value_float(r)
 }
 func (r *Float64) Set(v float64) error {
 	return r.setv(v)
@@ -1112,14 +1162,8 @@ type Int64 struct {
 	__node[Int64]
 }
 
-func (r Int64) Value() int64 {
-	v := reflect.ValueOf(r.result())
-	if !v.CanInt() {
-		var zero int64
-		return zero
-	}
-
-	return v.Int()
+func (r *Int64) Value() int64 {
+	return node_value_int(r)
 }
 func (r *Int64) Set(v int64) error {
 	return r.setv(v)
@@ -1600,8 +1644,8 @@ type String struct {
 	__node[String]
 }
 
-func (r String) Value() string {
-	return node_value_string(r.__node)
+func (r *String) Value() string {
+	return node_value_string(r)
 }
 func (r *String) Set(v string) error {
 	return r.setv(v)

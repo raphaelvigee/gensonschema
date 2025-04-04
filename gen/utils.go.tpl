@@ -5,6 +5,7 @@ import (
     "fmt"
     "github.com/ohler55/ojg/gen"
     "github.com/ohler55/ojg/oj"
+    "reflect"
     "slices"
     "strconv"
     "sync/atomic"
@@ -90,6 +91,69 @@ func node_get_as[F, T __delegate](r *__node[F]) __node[T] {
     }
 }
 
+func node_value_float(n __node_interface) float64 {
+    v := reflect.ValueOf(n.result())
+    if v.CanFloat() {
+        return v.Float()
+    }
+
+    if v.CanInt() {
+        return float64(v.Int())
+    }
+
+    if v.CanUint() {
+        return float64(v.Uint())
+    }
+
+	return 0
+}
+
+func node_value_int(n __node_interface) int64 {
+    v := reflect.ValueOf(n.result())
+    if v.CanFloat() {
+        return int64(v.Float())
+    }
+
+    if v.CanInt() {
+        return v.Int()
+    }
+
+    if v.CanUint() {
+        return int64(v.Uint())
+    }
+
+    return 0
+}
+
+func node_value_uint(n __node_interface) uint64 {
+    v := reflect.ValueOf(n.result())
+    if v.CanFloat() {
+        return uint64(v.Float())
+    }
+
+    if v.CanInt() {
+        return uint64(v.Int())
+    }
+
+    if v.CanUint() {
+        return v.Uint()
+    }
+
+    return 0
+}
+
+func node_value_bool(n __node_interface) bool {
+    v, _ := n.result().(bool)
+
+    return v
+}
+
+func node_value_string(n __node_interface) string {
+    v, _ := n.result().(string)
+
+    return v
+}
+
 func node_array_range[T any](r __node_array[T]) func(yield func(int, T) bool) {
     return func(yield func(int, T) bool) {
         l := r.Len()
@@ -155,12 +219,6 @@ func node_array_append(r __node_interface, v any) error {
     arr = append(arr, v)
 
 	return r.setv(arr)
-}
-
-func node_value_string[T __delegate](r __node[T]) string {
-    v, _ := r.result().(string)
-
-	return v
 }
 
 func node_value_struct[T any](r __node_result) T {

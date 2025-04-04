@@ -5,6 +5,7 @@ import (
     "fmt"
     "github.com/ohler55/ojg/gen"
     "github.com/ohler55/ojg/oj"
+    "slices"
     "strconv"
     "sync/atomic"
     "unsafe"
@@ -34,7 +35,9 @@ type __data struct {
 }
 
 type __node_interface interface {
-    JSON() []byte
+    ensureDataDeep(bool)
+    result() any
+	setv(any) error
 }
 
 type __node[D __delegate] struct {
@@ -116,6 +119,32 @@ func node_array_len(r __node_result) int {
 	res, _ := r.result().([]any)
 
 	return len(res)
+}
+
+func is_setting_array_index[RD __delegate](r *__node[RD]) bool {
+	if len(r._path) >= 1 {
+		maybeIndex := r._path[len(r._path)-1]
+
+		_, ok := maybeIndex.(jp.Nth)
+
+		return ok
+    }
+
+	return false
+}
+
+func node_array_append_node[RD, VD __delegate](r *__node[RD], v *__node[VD]) error {
+	return node_array_append(r, v.result())
+}
+
+func node_array_append[RD __delegate](r *__node[RD], v any) error {
+	arr, _ := r.result().([]any)
+	if arr == nil {
+		arr = make([]any, 0)
+    }
+    arr = append(arr, v)
+
+	return r.setv(arr)
 }
 
 func node_value_string[T __delegate](r __node[T]) string {
@@ -215,19 +244,30 @@ func (r *__node[D]) ensureData() {
     }
 }
 
-func (r *__node[D]) result() any {
-	/*if parent := r._parent; parent != nil {
-        return gjson.Get(parent.currentJson(), r._ppath)
-    }*/
+func (r *__node[D]) ensureDataDeep(self bool) {
+	if !r.Exists() {
+        if parent := r._parent; parent != nil {
+            parent.ensureDataDeep(true)
+        }
 
+		if self {
+            err := r.set(r.unsafeGetString(r.defaultJson()))
+			if err != nil {
+				panic(err)
+            }
+        }
+    }
+}
+
+func (r *__node[D]) result() any {
     r.ensureData()
 
+    // TODO: optimize to use parent cache
 	res := node_path(r).Get(r._data._data)
 	if len(res) == 0 {
         return nil
     }
 
-    // TODO: optimize to use parent cache
     return res[0]
 }
 
@@ -252,6 +292,7 @@ func (r *__node[D]) set(incoming string) error {
 
 func (r *__node[D]) setv(incomingv any) error {
     r.ensureData()
+	r.ensureDataDeep(false)
 
     if node_path(r).String() == jp.R().String() {
 		r._data._data = incomingv
@@ -260,8 +301,18 @@ func (r *__node[D]) setv(incomingv any) error {
 		return nil
     }
 
-	// TODO: optimize to use parent cache
-    return node_path(r).SetOne(r._data._data, incomingv)
+	if is_setting_array_index(r) {
+        res := r._parent.result()
+        arr, ok := res.([]any)
+		if !ok {
+			arr = make([]any, 0)
+        }
+        arr = append(arr, incomingv)
+
+		return r._parent.setv(arr)
+    } else {
+        return node_path(r).SetOne(r._data._data, incomingv)
+    }
 }
 
 func (r *__node[D]) setMerge(incoming any) error {
@@ -294,5 +345,9 @@ func (r __node[D]) copy() __node[D] {
 
 func (r __node[D]) defaultJson() []byte {
     var d D
-    return d.typeDefaultJson()
+	s := d.typeDefaultJson()
+	if len(s) == 0 {
+		return []byte("{}")
+    }
+    return s
 }

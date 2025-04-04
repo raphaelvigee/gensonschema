@@ -36,7 +36,9 @@ type __data struct {
 }
 
 type __node_interface interface {
-	JSON() []byte
+	ensureDataDeep(bool)
+	result() any
+	setv(any) error
 }
 
 type __node[D __delegate] struct {
@@ -118,6 +120,32 @@ func node_array_len(r __node_result) int {
 	res, _ := r.result().([]any)
 
 	return len(res)
+}
+
+func is_setting_array_index[RD __delegate](r *__node[RD]) bool {
+	if len(r._path) >= 1 {
+		maybeIndex := r._path[len(r._path)-1]
+
+		_, ok := maybeIndex.(jp.Nth)
+
+		return ok
+	}
+
+	return false
+}
+
+func node_array_append_node[RD, VD __delegate](r *__node[RD], v *__node[VD]) error {
+	return node_array_append(r, v.result())
+}
+
+func node_array_append[RD __delegate](r *__node[RD], v any) error {
+	arr, _ := r.result().([]any)
+	if arr == nil {
+		arr = make([]any, 0)
+	}
+	arr = append(arr, v)
+
+	return r.setv(arr)
 }
 
 func node_value_string[T __delegate](r __node[T]) string {
@@ -217,19 +245,30 @@ func (r *__node[D]) ensureData() {
 	}
 }
 
-func (r *__node[D]) result() any {
-	/*if parent := r._parent; parent != nil {
-	    return gjson.Get(parent.currentJson(), r._ppath)
-	}*/
+func (r *__node[D]) ensureDataDeep(self bool) {
+	if !r.Exists() {
+		if parent := r._parent; parent != nil {
+			parent.ensureDataDeep(true)
+		}
 
+		if self {
+			err := r.set(r.unsafeGetString(r.defaultJson()))
+			if err != nil {
+				panic(err)
+			}
+		}
+	}
+}
+
+func (r *__node[D]) result() any {
 	r.ensureData()
 
+	// TODO: optimize to use parent cache
 	res := node_path(r).Get(r._data._data)
 	if len(res) == 0 {
 		return nil
 	}
 
-	// TODO: optimize to use parent cache
 	return res[0]
 }
 
@@ -254,6 +293,7 @@ func (r *__node[D]) set(incoming string) error {
 
 func (r *__node[D]) setv(incomingv any) error {
 	r.ensureData()
+	r.ensureDataDeep(false)
 
 	if node_path(r).String() == jp.R().String() {
 		r._data._data = incomingv
@@ -262,8 +302,18 @@ func (r *__node[D]) setv(incomingv any) error {
 		return nil
 	}
 
-	// TODO: optimize to use parent cache
-	return node_path(r).SetOne(r._data._data, incomingv)
+	if is_setting_array_index(r) {
+		res := r._parent.result()
+		arr, ok := res.([]any)
+		if !ok {
+			arr = make([]any, 0)
+		}
+		arr = append(arr, incomingv)
+
+		return r._parent.setv(arr)
+	} else {
+		return node_path(r).SetOne(r._data._data, incomingv)
+	}
 }
 
 func (r *__node[D]) setMerge(incoming any) error {
@@ -296,7 +346,11 @@ func (r __node[D]) copy() __node[D] {
 
 func (r __node[D]) defaultJson() []byte {
 	var d D
-	return d.typeDefaultJson()
+	s := d.typeDefaultJson()
+	if len(s) == 0 {
+		return []byte("{}")
+	}
+	return s
 }
 
 type AllOf struct {
@@ -728,7 +782,7 @@ func (r ArrayTopfield1) Set(v *ArrayTopfield1) error {
 }
 
 func (r *ArrayTopfield1) Append(v *ArrayDefinitionsDef1) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append_node(&r.__node, &v.__node)
 }
 
 func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
@@ -773,7 +827,7 @@ func (r ArrayTopfield2) Value() []string {
 	return node_value_struct[[]string](&r.__node)
 }
 func (r *ArrayTopfield2) Append(v string) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append(&r.__node, v)
 }
 
 func (r *ArrayTopfield2) At(i int) *String {
@@ -894,7 +948,7 @@ func (r ArraysSchemaFruits) Value() []string {
 	return node_value_struct[[]string](&r.__node)
 }
 func (r *ArraysSchemaFruits) Append(v string) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append(&r.__node, v)
 }
 
 func (r *ArraysSchemaFruits) At(i int) *String {
@@ -944,7 +998,7 @@ func (r ArraysSchemaVegetables) Set(v *ArraysSchemaVegetables) error {
 }
 
 func (r *ArraysSchemaVegetables) Append(v *ArraysSchemaDefsVeggie) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append_node(&r.__node, &v.__node)
 }
 
 func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
@@ -1210,7 +1264,7 @@ func (r LargeFileLargeFile) Set(v *LargeFileLargeFile) error {
 }
 
 func (r *LargeFileLargeFile) Append(v *LargeFileItems) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append_node(&r.__node, &v.__node)
 }
 
 func (r *LargeFileLargeFile) At(i int) *LargeFileItems {
@@ -1256,7 +1310,7 @@ func (r NestedarraysField1) Set(v *NestedarraysField1) error {
 }
 
 func (r *NestedarraysField1) Append(v *NestedarraysField1Items) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append_node(&r.__node, &v.__node)
 }
 
 func (r *NestedarraysField1) At(i int) *NestedarraysField1Items {
@@ -1332,7 +1386,7 @@ func (r NestedarraysField1ItemsField2) Set(v *NestedarraysField1ItemsField2) err
 }
 
 func (r *NestedarraysField1ItemsField2) Append(v *SomeTitle) error {
-	return r.At(r.Len()).Set(v)
+	return node_array_append_node(&r.__node, &v.__node)
 }
 
 func (r *NestedarraysField1ItemsField2) At(i int) *SomeTitle {

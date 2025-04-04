@@ -133,12 +133,20 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	appendType := "*" + styp
 	if dtype != "" {
 		appendType = dtype
-	}
-	s.methods = append(s.methods, fmt.Sprintf(`
+
+		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Append(v %v) error {
-			return r.At(r.Len()).Set(v)
+			return node_array_append(&r.__node, v)
 		}
 	`, s.name, appendType))
+	} else {
+		s.methods = append(s.methods, fmt.Sprintf(`
+		func (r *%v) Append(v %v) error {
+			return node_array_append_node(&r.__node, &v.__node)
+		}
+	`, s.name, appendType))
+	}
+
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Len() int {
 			return node_array_len(&r.__node)

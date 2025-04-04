@@ -5,7 +5,6 @@ package gen
 import (
 	"reflect"
 	"slices"
-	"sync/atomic"
 	"unsafe"
 
 	"github.com/ohler55/ojg/jp"
@@ -23,7 +22,6 @@ type __node_array[T any] interface {
 
 type __data struct {
 	_data any
-	_c    atomic.Uint64
 }
 
 type __node_interface interface {
@@ -188,11 +186,11 @@ func (r __node[D]) unsafeGetString(b []byte) string {
 }
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
-	return oj.Marshal(r.result())
+	return oj.Marshal(r.result(), oj.Options{Sort: true})
 }
 
 func (r __node[D]) JSON() []byte {
-	b, _ := oj.Marshal(r.result())
+	b, _ := r.MarshalJSON()
 	return b
 }
 
@@ -206,7 +204,7 @@ func (r *__node[D]) newData(b string) *__data {
 		panic(err)
 	}
 
-	return &__data{_data: data, _c: atomic.Uint64{}}
+	return &__data{_data: data}
 }
 
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
@@ -311,7 +309,6 @@ func (r *__node[D]) setv(incomingv any) error {
 
 	if node_is_root(r) {
 		r._data._data = incomingv
-		r._data._c.Add(1)
 
 		return nil
 	}

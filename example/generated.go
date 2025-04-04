@@ -263,8 +263,14 @@ func (r *__node[D]) Exists() bool {
 }
 
 func (r *__node[D]) Delete() error {
-	// TODO: optimize to use parent cache
-	return node_path(r).DelOne(r._data._data)
+	val, err := node_path(r).RemoveOne(r._data._data)
+	if err != nil {
+		return err
+	}
+
+	r._data._data = val
+
+	return nil
 }
 
 func (r *__node[D]) set(incoming string) error {

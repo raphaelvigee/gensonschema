@@ -617,6 +617,7 @@ func Gen(config Config) error {
 	g.imports["sync/atomic"] = struct{}{}
 	g.imports["strconv"] = struct{}{}
 	g.imports["fmt"] = struct{}{}
+	g.imports["slices"] = struct{}{}
 
 	w := writer{g.config.Out}
 	w.Package(g.config.PackageName)

@@ -4,6 +4,7 @@ package gen
 
 import (
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -12,14 +13,6 @@ import (
 	"github.com/ohler55/ojg/jp"
 	"github.com/ohler55/ojg/oj"
 )
-
-func pathJoin(p1, p2 string) string {
-	if p1 == "" {
-		return p2
-	}
-
-	return p1 + "." + p2
-}
 
 type __delegate interface {
 	typeDefaultJson() []byte
@@ -67,7 +60,7 @@ func node_at[F, T __delegate](from *__node[F], n int) __node[T] {
 
 	return __node[T]{
 		_data:   from._data,
-		_path:   node_path(from).N(n),
+		_path:   slices.Clone(node_path(from)).N(n),
 		_parent: from,
 		_ppath:  strconv.Itoa(n),
 		_safe:   from._safe,
@@ -79,7 +72,7 @@ func node_get[F, T __delegate](from *__node[F], path string) __node[T] {
 
 	return __node[T]{
 		_data:   from._data,
-		_path:   node_path(from).C(path),
+		_path:   slices.Clone(node_path(from)).C(path),
 		_parent: from,
 		_ppath:  path,
 		_safe:   from._safe,

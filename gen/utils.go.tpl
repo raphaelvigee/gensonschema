@@ -133,6 +133,24 @@ func is_setting_array_index[RD __delegate](r *__node[RD]) bool {
 	return false
 }
 
+func node_array_set[RD __delegate](r *__node[RD], v any) error {
+    index := r._path[len(r._path)-1].(jp.Nth)
+
+    arr, _ := r._parent.result().([]any)
+    if arr == nil {
+        arr = make([]any, 0)
+    }
+    arr = append(arr, v)
+
+    for i := len(arr); i <= int(index); i++ {
+        arr = append(arr, nil)
+    }
+
+	arr[index] = v
+
+    return r._parent.setv(arr)
+}
+
 func node_array_append_node[RD, VD __delegate](r *__node[RD], v *__node[VD]) error {
 	return node_array_append(r, v.result())
 }
@@ -290,15 +308,24 @@ func (r *__node[D]) set(incoming string) error {
 	return r.setv(incomingv)
 }
 
-func (r *__node[D]) setnode(v __node_interface) error {
-	b, err := oj.Marshal(v)
-	if err != nil {
-		return err
+func (r *__node[D]) ensureMap(v any) (any, error) {
+    b, err := oj.Marshal(v)
+    if err != nil {
+        return nil, err
     }
 
-	data, err := oj.Parse(b)
+    data, err := oj.Parse(b)
     if err != nil {
-        return err
+        return nil, err
+    }
+
+	return data, nil
+}
+
+func (r *__node[D]) setnode(v __node_interface) error {
+    data, err := r.ensureMap(v)
+	if err != nil {
+		return err
     }
 
     return r.setv(data)
@@ -316,28 +343,28 @@ func (r *__node[D]) setv(incomingv any) error {
     }
 
 	if is_setting_array_index(r) {
-		return node_array_append(r._parent, incomingv)
+		return node_array_set(r, incomingv)
     } else {
         return node_path(r).SetOne(r._data._data, incomingv)
     }
 }
 
 func (r *__node[D]) setMerge(incoming any) error {
-	return nil
+    data, err := r.ensureMap(incoming)
+    if err != nil {
+        return err
+    }
 
-	/*current := r.currentJson()
+    arr, ok := r.result().(map[string]any)
+	if !ok {
+		arr = make(map[string]any)
+    }
 
-	var buf bytes.Buffer
-	buf.Grow(len(current)+len(incoming)+3)
-	buf.WriteByte('[')
-	buf.WriteString(current)
-	buf.WriteByte(',')
-	buf.WriteString(incoming)
-	buf.WriteByte(']')
+	for k, v := range data.(map[string]any) {
+		arr[k] = v
+    }
 
-    incoming2 := gjson.GetBytes(buf.Bytes(), "@join").Raw
-
-    return r.set(incoming2)*/
+	return r.setv(arr)
 }
 
 func (r __node[D]) copy() __node[D] {

@@ -44,10 +44,9 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 	`, s.name))
 
 	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r %[1]v) WithSafe(safe bool) *%[1]v {
-			return &%[1]v{ 
-				__node: r.__node.withSafe(safe),
-			}
+	// Deprecated: not useful anymore
+	func (r *%[1]v) WithSafe(safe bool) *%[1]v {
+			return r
 	}
 	`, s.name))
 

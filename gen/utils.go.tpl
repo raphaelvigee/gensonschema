@@ -37,12 +37,6 @@ type __node[D __delegate] struct {
 	_path jp.Expr
 
 	_parent __node_interface
-	_ppath string
-
-	_rc uint64
-	_rjson string
-
-	_safe bool
 }
 
 func node_path[F __delegate](from *__node[F]) jp.Expr {
@@ -53,6 +47,20 @@ func node_path[F __delegate](from *__node[F]) jp.Expr {
 	return from._path
 }
 
+func node_is_root[F __delegate](r *__node[F]) bool {
+	if len(r._path) == 0 {
+		return true
+    }
+
+	if len(r._path) == 1 {
+        _, ok := r._path[0].(jp.Root)
+
+		return ok
+    }
+
+	return false
+}
+
 func node_at[F, T __delegate](from *__node[F], n int) __node[T] {
     from.ensureData()
 
@@ -60,8 +68,6 @@ func node_at[F, T __delegate](from *__node[F], n int) __node[T] {
         _data:   from._data,
         _path:   slices.Clone(node_path(from)).N(n),
         _parent: from,
-        _ppath:  strconv.Itoa(n),
-        _safe:   from._safe,
     }
 }
 
@@ -72,8 +78,6 @@ func node_get[F, T __delegate](from *__node[F], path string) __node[T] {
         _data:   from._data,
         _path:   slices.Clone(node_path(from)).C(path),
         _parent: from,
-        _ppath:  path,
-        _safe:   from._safe,
     }
 }
 
@@ -84,8 +88,6 @@ func node_get_as[F, T __delegate](r *__node[F]) __node[T] {
         _data: r._data,
         _path: r._path,
         _parent: r._parent,
-        _ppath: r._ppath,
-        _safe: r._safe,
     }
 }
 
@@ -158,9 +160,6 @@ func node_array_append(r __node_interface, v any) error {
 
 func node_value_string[T __delegate](r __node[T]) string {
     v, _ := r.result().(string)
-    if r._safe {
-        v = strings.Clone(v)
-    }
 
 	return v
 }
@@ -188,27 +187,6 @@ func (r __node[D]) unsafeGetString(b []byte) string {
     return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
-/*func (r __node[D]) currentJsonb() []byte {
-	return r.unsafeGetBytes(r.currentJson())
-}
-
-func (r __node[D]) currentJson() string {
-    if r._path == "" {
-        return r.json()
-    }
-
-    if r._rjson != "" && r._rc > 0 && r._rc == r._data._c.Load() {
-        return r._rjson
-    }
-
-    res := r.result()
-
-	r._rc = r._data._c.Load()
-	r._rjson = res.Raw
-
-    return r._rjson
-}*/
-
 func (r __node[D]) MarshalJSON() ([]byte, error) {
 	return oj.Marshal(r.result())
 }
@@ -219,7 +197,6 @@ func (r __node[D]) JSON() []byte {
 }
 
 func (r __node[D]) withSafe(safe bool) __node[D] {
-    r._safe = safe
     return r
 }
 
@@ -326,7 +303,7 @@ func (r *__node[D]) setv(incomingv any) error {
     r.ensureData()
 	r.ensureDataDeep(false)
 
-    if node_path(r).String() == jp.R().String() {
+    if node_is_root(r) {
 		r._data._data = incomingv
 		r._data._c.Add(1)
 
@@ -359,13 +336,9 @@ func (r *__node[D]) setMerge(incoming any) error {
 }
 
 func (r __node[D]) copy() __node[D] {
-	return r
-    /*j := r.currentJson()
+	// TODO
 
-    return __node[D]{
-        _data: r.newData(j),
-        _safe: r._safe,
-    }*/
+	return r
 }
 
 func (r __node[D]) defaultJson() []byte {

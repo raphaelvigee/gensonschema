@@ -30,6 +30,8 @@ type __node_interface interface {
     ensureDataDeep(bool)
     result() any
 	setv(any) error
+    path() jp.Expr
+	parent() __node_interface
 }
 
 type __node[D __delegate] struct {
@@ -39,21 +41,21 @@ type __node[D __delegate] struct {
 	_parent __node_interface
 }
 
-func node_path[F __delegate](from *__node[F]) jp.Expr {
-    if from._path == nil {
+func node_path(from __node_interface) jp.Expr {
+    if from.path() == nil {
 		return jp.R()
     }
 
-	return from._path
+	return from.path()
 }
 
-func node_is_root[F __delegate](r *__node[F]) bool {
-	if len(r._path) == 0 {
+func node_is_root(r __node_interface) bool {
+	if len(r.path()) == 0 {
 		return true
     }
 
-	if len(r._path) == 1 {
-        _, ok := r._path[0].(jp.Root)
+	if len(r.path()) == 1 {
+        _, ok := r.path()[0].(jp.Root)
 
 		return ok
     }
@@ -178,9 +180,9 @@ func node_array_len(r __node_result) int {
 	return len(res)
 }
 
-func is_setting_array_index[RD __delegate](r *__node[RD]) bool {
-	if len(r._path) >= 1 {
-		maybeIndex := r._path[len(r._path)-1]
+func is_setting_array_index(r __node_interface) bool {
+	if len(r.path()) >= 1 {
+		maybeIndex := r.path()[len(r.path())-1]
 
 		_, ok := maybeIndex.(jp.Nth)
 
@@ -190,10 +192,10 @@ func is_setting_array_index[RD __delegate](r *__node[RD]) bool {
 	return false
 }
 
-func node_array_set[RD __delegate](r *__node[RD], v any) error {
-    index := r._path[len(r._path)-1].(jp.Nth)
+func node_array_set(r __node_interface, v any) error {
+    index := r.path()[len(r.path())-1].(jp.Nth)
 
-    arr, _ := r._parent.result().([]any)
+    arr, _ := r.parent().result().([]any)
     if arr == nil {
         arr = make([]any, 0)
     }
@@ -204,10 +206,10 @@ func node_array_set[RD __delegate](r *__node[RD], v any) error {
 
 	arr[index] = v
 
-    return r._parent.setv(arr)
+    return r.parent().setv(arr)
 }
 
-func node_array_append_node[RD, VD __delegate](r *__node[RD], v *__node[VD]) error {
+func node_array_append_node(r, v __node_interface) error {
 	return node_array_append(r, v.result())
 }
 
@@ -275,6 +277,14 @@ func (r *__node[D]) UnmarshalJSON(b []byte) error {
 
     *r = __node[D]{_data: r.newData(r.unsafeGetString(b))}
     return nil
+}
+
+func (r __node[D]) path() jp.Expr {
+    return r._path
+}
+
+func (r __node[D]) parent() __node_interface {
+    return r._parent
 }
 
 func (r __node[D]) Path() string {

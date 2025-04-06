@@ -5,7 +5,6 @@ package gen
 import (
 	"reflect"
 	"slices"
-	"unsafe"
 
 	"github.com/ohler55/ojg/jp"
 	"github.com/ohler55/ojg/oj"
@@ -25,11 +24,14 @@ type __data struct {
 }
 
 type __node_interface interface {
-	ensureDataDeep(bool)
+	ensureDataWritable() error
 	result() any
 	setv(any) error
 	path() jp.Expr
 	parent() __node_interface
+	Exists() bool
+	set([]byte) error
+	defaultJson() []byte
 }
 
 type __node[D __delegate] struct {
@@ -168,11 +170,7 @@ func node_array_range[T any](r __node_array[T]) func(yield func(int, T) bool) {
 	}
 }
 
-type __node_result interface {
-	result() any
-}
-
-func node_array_len(r __node_result) int {
+func node_array_len(r __node_interface) int {
 	res, _ := r.result().([]any)
 
 	return len(res)
@@ -221,7 +219,7 @@ func node_array_append(r __node_interface, v any) error {
 	return r.setv(arr)
 }
 
-func node_value_struct[T any](r __node_result) T {
+func node_value_struct[T any](r __node_interface) T {
 	data := r.result()
 
 	b, err := oj.Marshal(data)
@@ -233,15 +231,6 @@ func node_value_struct[T any](r __node_result) T {
 	_ = oj.Unmarshal(b, &v)
 
 	return v
-}
-
-// https://www.reddit.com/r/golang/comments/14xvgoj/converting_string_byte/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button
-func (r __node[D]) unsafeGetBytes(s string) []byte {
-	return unsafe.Slice(unsafe.StringData(s), len(s))
-}
-
-func (r __node[D]) unsafeGetString(b []byte) string {
-	return unsafe.String(unsafe.SliceData(b), len(b))
 }
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
@@ -257,8 +246,8 @@ func (r __node[D]) withSafe(safe bool) __node[D] {
 	return r
 }
 
-func (r *__node[D]) newData(b string) *__data {
-	data, err := oj.ParseString(b)
+func (r *__node[D]) newData(b []byte) *__data {
+	data, err := oj.Parse(b)
 	if err != nil {
 		panic(err)
 	}
@@ -268,12 +257,10 @@ func (r *__node[D]) newData(b string) *__data {
 
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
 	if r._data != nil {
-		r.set(r.unsafeGetString(b))
-
-		return nil
+		return r.set(b)
 	}
 
-	*r = __node[D]{_data: r.newData(r.unsafeGetString(b))}
+	*r = __node[D]{_data: r.newData(b)}
 	return nil
 }
 
@@ -291,23 +278,26 @@ func (r __node[D]) Path() string {
 
 func (r *__node[D]) ensureData() {
 	if r._data == nil {
-		r._data = r.newData(string(r.defaultJson()))
+		r._data = r.newData(r.defaultJson())
 	}
 }
 
-func (r *__node[D]) ensureDataDeep(self bool) {
-	if !r.Exists() {
-		if parent := r._parent; parent != nil {
-			parent.ensureDataDeep(true)
-		}
-
-		if self {
-			err := r.set(r.unsafeGetString(r.defaultJson()))
+func (r *__node[D]) ensureDataWritable() error {
+	if parent := r._parent; parent != nil {
+		if !parent.Exists() {
+			err := parent.ensureDataWritable()
 			if err != nil {
-				panic(err)
+				return err
+			}
+
+			err = parent.set(parent.defaultJson())
+			if err != nil {
+				return err
 			}
 		}
 	}
+
+	return nil
 }
 
 func (r *__node[D]) result() any {
@@ -338,8 +328,8 @@ func (r *__node[D]) Delete() error {
 	return nil
 }
 
-func (r *__node[D]) set(incoming string) error {
-	incomingv, err := oj.ParseString(incoming)
+func (r *__node[D]) set(incoming []byte) error {
+	incomingv, err := oj.Parse(incoming)
 	if err != nil {
 		return err
 	}
@@ -372,7 +362,10 @@ func (r *__node[D]) setnode(v __node_interface) error {
 
 func (r *__node[D]) setv(incomingv any) error {
 	r.ensureData()
-	r.ensureDataDeep(false)
+	err := r.ensureDataWritable()
+	if err != nil {
+		return err
+	}
 
 	if node_is_root(r) {
 		r._data._data = incomingv
@@ -411,7 +404,7 @@ func (r __node[D]) copy() __node[D] {
 		panic(err)
 	}
 
-	return __node[D]{_data: r.newData(r.unsafeGetString(b))}
+	return __node[D]{_data: r.newData(b)}
 }
 
 func (r __node[D]) defaultJson() []byte {
@@ -850,7 +843,7 @@ func (r *ArrayTopfield1) At(i int) *ArrayDefinitionsDef1 {
 }
 
 func (r ArrayTopfield1) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r ArrayTopfield1) Len() int {
@@ -898,7 +891,7 @@ func (r *ArrayTopfield2) Set(v []string) error {
 }
 
 func (r ArrayTopfield2) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r ArrayTopfield2) Len() int {
@@ -1016,7 +1009,7 @@ func (r *ArraysSchemaFruits) Set(v []string) error {
 }
 
 func (r ArraysSchemaFruits) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r ArraysSchemaFruits) Len() int {
@@ -1061,7 +1054,7 @@ func (r *ArraysSchemaVegetables) At(i int) *ArraysSchemaDefsVeggie {
 }
 
 func (r ArraysSchemaVegetables) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r ArraysSchemaVegetables) Len() int {
@@ -1307,7 +1300,7 @@ func (r *LargeFileLargeFile) At(i int) *LargeFileItems {
 }
 
 func (r LargeFileLargeFile) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r LargeFileLargeFile) Len() int {
@@ -1352,7 +1345,7 @@ func (r *NestedarraysField1) At(i int) *NestedarraysField1Items {
 }
 
 func (r NestedarraysField1) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r NestedarraysField1) Len() int {
@@ -1426,7 +1419,7 @@ func (r *NestedarraysField1ItemsField2) At(i int) *SomeTitle {
 }
 
 func (r NestedarraysField1ItemsField2) Clear() error {
-	return r.set("[]")
+	return r.set([]byte("[]"))
 }
 
 func (r NestedarraysField1ItemsField2) Len() int {

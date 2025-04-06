@@ -133,7 +133,7 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Clear() error {
-			return r.set("[]")
+			return r.set([]byte("[]"))
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`

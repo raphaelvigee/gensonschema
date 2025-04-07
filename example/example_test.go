@@ -4,6 +4,7 @@ package gen_test
 import (
 	_ "embed"
 	"encoding/json"
+	"fmt"
 	gen "github.com/raphaelvigee/gensonschema/example"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -221,4 +222,20 @@ func TestNestedArrays(t *testing.T) {
 	_ = obj2.Append(&v)
 
 	assert.Equal(t, `[{}]`, string(obj2.JSON()))
+}
+
+func TestReference(t *testing.T) {
+	var obj gen.Person
+	err := json.Unmarshal([]byte(`{"firstName": "hello"}`), &obj)
+	require.NoError(t, err)
+
+	p1 := fmt.Sprintf("%p", &obj.JSON()[0])
+	p2 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.Equal(t, p1, p2)
+
+	_ = obj.GetLastName().Set("foo")
+	p3 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.NotEqual(t, p3, p2)
+	p4 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.Equal(t, p3, p4)
 }

@@ -5,6 +5,7 @@ package gen
 import (
 	"reflect"
 	"slices"
+	"sync/atomic"
 
 	"github.com/ohler55/ojg/jp"
 	"github.com/ohler55/ojg/oj"
@@ -21,10 +22,11 @@ type __node_array[T any] interface {
 
 type __data struct {
 	_data any
+	_c    atomic.Uint64
 }
 
 type __node_interface interface {
-	ensureDataWritable() error
+	ensureWritable() error
 	result() any
 	setv(any) error
 	path() jp.Expr
@@ -39,6 +41,11 @@ type __node[D __delegate] struct {
 	_path jp.Expr
 
 	_parent __node_interface
+
+	_json  []byte
+	_jsonc uint64
+	// This exists because https://github.com/golang/go/issues/68919
+	_setjson func(b []byte)
 }
 
 func node_path(from __node_interface) jp.Expr {
@@ -234,10 +241,23 @@ func node_value_struct[T any](r __node_interface) T {
 }
 
 func (r __node[D]) MarshalJSON() ([]byte, error) {
-	return oj.Marshal(r.result(), &oj.Options{Sort: true})
+	if r._data != nil && r._jsonc == r._data._c.Load() {
+		return r._json, nil
+	}
+
+	b, err := oj.Marshal(r.result(), &oj.Options{Sort: true})
+	if err != nil {
+		return nil, err
+	}
+
+	if setjson := r._setjson; setjson != nil {
+		setjson(b)
+	}
+
+	return b, nil
 }
 
-func (r __node[D]) JSON() []byte {
+func (r *__node[D]) JSON() []byte {
 	b, _ := r.MarshalJSON()
 	return b
 }
@@ -252,16 +272,14 @@ func (r *__node[D]) newData(b []byte) *__data {
 		panic(err)
 	}
 
-	return &__data{_data: data}
+	var c atomic.Uint64
+	c.Add(1)
+
+	return &__data{_data: data, _c: c}
 }
 
 func (r *__node[D]) UnmarshalJSON(b []byte) error {
-	if r._data != nil {
-		return r.set(b)
-	}
-
-	*r = __node[D]{_data: r.newData(b)}
-	return nil
+	return r.set(b)
 }
 
 func (r __node[D]) path() jp.Expr {
@@ -282,10 +300,10 @@ func (r *__node[D]) ensureData() {
 	}
 }
 
-func (r *__node[D]) ensureDataWritable() error {
+func (r *__node[D]) ensureWritable() error {
 	if parent := r._parent; parent != nil {
 		if !parent.Exists() {
-			err := parent.ensureDataWritable()
+			err := parent.ensureWritable()
 			if err != nil {
 				return err
 			}
@@ -303,7 +321,6 @@ func (r *__node[D]) ensureDataWritable() error {
 func (r *__node[D]) result() any {
 	r.ensureData()
 
-	// TODO: optimize to use parent cache
 	res := node_path(r).Get(r._data._data)
 	if len(res) == 0 {
 		return nil
@@ -313,7 +330,6 @@ func (r *__node[D]) result() any {
 }
 
 func (r *__node[D]) Exists() bool {
-	// TODO: optimize to use parent cache
 	return node_path(r).Has(r._data._data)
 }
 
@@ -323,7 +339,7 @@ func (r *__node[D]) Delete() error {
 		return err
 	}
 
-	r._data._data = val
+	r.setdata(val)
 
 	return nil
 }
@@ -362,13 +378,18 @@ func (r *__node[D]) setnode(v __node_interface) error {
 
 func (r *__node[D]) setv(incomingv any) error {
 	r.ensureData()
-	err := r.ensureDataWritable()
+	err := r.ensureWritable()
 	if err != nil {
 		return err
 	}
 
+	r._setjson = func(b []byte) {
+		r._json = b
+		r._jsonc = r._data._c.Load()
+	}
+
 	if node_is_root(r) {
-		r._data._data = incomingv
+		r.setdata(incomingv)
 
 		return nil
 	}
@@ -376,8 +397,14 @@ func (r *__node[D]) setv(incomingv any) error {
 	if is_setting_array_index(r) {
 		return node_array_set(r, incomingv)
 	} else {
+		defer r._data._c.Add(1)
 		return node_path(r).SetOne(r._data._data, incomingv)
 	}
+}
+
+func (r *__node[D]) setdata(v any) {
+	r._data._data = v
+	r._data._c.Add(1)
 }
 
 func (r *__node[D]) setMerge(incoming any) error {

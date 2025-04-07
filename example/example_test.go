@@ -225,12 +225,16 @@ func TestNestedArrays(t *testing.T) {
 }
 
 func TestReference(t *testing.T) {
+	b := []byte(`{"firstName": "hello"}`)
+
 	var obj gen.Person
-	err := json.Unmarshal([]byte(`{"firstName": "hello"}`), &obj)
+	err := json.Unmarshal(b, &obj)
 	require.NoError(t, err)
 
+	p0 := fmt.Sprintf("%p", &b[0])
 	p1 := fmt.Sprintf("%p", &obj.JSON()[0])
 	p2 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.Equal(t, p0, p1)
 	assert.Equal(t, p1, p2)
 
 	_ = obj.GetLastName().Set("foo")

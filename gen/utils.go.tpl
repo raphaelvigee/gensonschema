@@ -352,7 +352,7 @@ func (r *__node[D]) set(incoming []byte) error {
         return err
     }
 
-	return r.setv(incomingv)
+	return r.setvb(incomingv, incoming)
 }
 
 func (r *__node[D]) ensureMap(v any) (any, error) {
@@ -379,6 +379,10 @@ func (r *__node[D]) setnode(v __node_interface) error {
 }
 
 func (r *__node[D]) setv(incomingv any) error {
+	return r.setvb(incomingv, nil)
+}
+
+func (r *__node[D]) setvb(incomingv any, b []byte) error {
     r.ensureData()
 	err := r.ensureWritable()
 	if err != nil {
@@ -392,6 +396,9 @@ func (r *__node[D]) setv(incomingv any) error {
 
     if node_is_root(r) {
 		r.setdata(incomingv)
+		if b != nil {
+            r._setjson(b)
+        }
 
 		return nil
     }

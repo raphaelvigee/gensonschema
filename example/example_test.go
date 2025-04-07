@@ -2,16 +2,12 @@
 package gen_test
 
 import (
-	"bytes"
 	_ "embed"
 	"encoding/json"
 	"fmt"
 	gen "github.com/raphaelvigee/gensonschema/example"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io"
-	"runtime"
-	"sync/atomic"
 	"testing"
 )
 
@@ -186,9 +182,11 @@ func TestArray(t *testing.T) {
 
 	_ = obj.GetTopfield1().At(0).GetField2()
 
+	assert.Equal(t, 1, obj.GetTopfield1().Len())
+
 	_ = obj.GetTopfield1().Clear()
 
-	assert.Empty(t, obj.GetTopfield1().Len())
+	assert.Zero(t, obj.GetTopfield1().Len())
 
 	_ = obj.GetTopfield2().Append("hello")
 
@@ -200,6 +198,14 @@ func TestArray(t *testing.T) {
 	_ = obj2.GetTopfield2().Append("hello")
 
 	assert.Equal(t, `{"topfield2":["hello"]}`, string(obj2.JSON()))
+
+	_ = obj2.GetTopfield2().At(0).Set("hello")
+
+	assert.Equal(t, `{"topfield2":["hello"]}`, string(obj2.JSON()))
+
+	_ = obj2.GetTopfield2().At(0).Delete()
+
+	assert.Equal(t, `{"topfield2":[]}`, string(obj2.JSON()))
 }
 
 func TestNestedArrays(t *testing.T) {
@@ -219,39 +225,21 @@ func TestNestedArrays(t *testing.T) {
 }
 
 func TestReference(t *testing.T) {
-	scoped := func(safe bool) (string, func() bool) {
-		var buf bytes.Buffer
-		buf.WriteString(`{"firstName": "hello"}`)
-		defer buf.Reset()
+	b := []byte(`{"firstName": "hello"}`)
 
-		var finalized atomic.Bool
+	var obj gen.Person
+	err := json.Unmarshal(b, &obj)
+	require.NoError(t, err)
 
-		runtime.SetFinalizer(&buf.Bytes()[0], func(f *byte) {
-			finalized.Store(true)
-		})
+	p0 := fmt.Sprintf("%p", &b[0])
+	p1 := fmt.Sprintf("%p", &obj.JSON()[0])
+	p2 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.Equal(t, p0, p1)
+	assert.Equal(t, p1, p2)
 
-		var obj gen.Person
-		err := json.Unmarshal(buf.Bytes(), &obj)
-		require.NoError(t, err)
-
-		value := obj.WithSafe(safe).GetFirstName().Value()
-
-		if value != "hello" {
-			panic("humm...")
-		}
-
-		return value, func() bool {
-			runtime.GC()
-
-			return finalized.Load()
-		}
-	}
-
-	v, finalized := scoped(false)
-	assert.False(t, finalized())
-	_, _ = fmt.Fprint(io.Discard, v)
-
-	v, finalized = scoped(true)
-	assert.True(t, finalized())
-	_, _ = fmt.Fprint(io.Discard, v)
+	_ = obj.GetLastName().Set("foo")
+	p3 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.NotEqual(t, p3, p2)
+	p4 := fmt.Sprintf("%p", &obj.JSON()[0])
+	assert.Equal(t, p3, p4)
 }

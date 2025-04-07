@@ -23,11 +23,11 @@ type structType struct {
 }
 
 var wellKnownTypes = map[string]string{
-	"int64":   "Int()",
-	"uint64":  "Uint()",
-	"float64": "Float()",
-	"bool":    "Bool()",
-	"string":  "String()",
+	"int64":   "node_value_int",
+	"uint64":  "node_value_uint",
+	"float64": "node_value_float",
+	"bool":    "node_value_bool",
+	"string":  "node_value_string",
 }
 
 func (s *structType) MakeStore(typ, defaultJson string) {
@@ -44,14 +44,6 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 	`, s.name))
 
 	s.methods = append(s.methods, fmt.Sprintf(`
-	func (r %[1]v) WithSafe(safe bool) *%[1]v {
-			return &%[1]v{ 
-				__node: r.__node.withSafe(safe),
-			}
-	}
-	`, s.name))
-
-	s.methods = append(s.methods, fmt.Sprintf(`
 	func (r %v) typeDefaultJson() []byte {
 		return []byte("%v")
 	}
@@ -59,48 +51,33 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 
 	if typ != "" {
 		if accessor, ok := wellKnownTypes[typ]; ok {
-			if accessor == "String()" {
-				s.methods = append(s.methods, fmt.Sprintf(`
-				func (r %v) Value() %v {
-					return node_value_string(r.__node)
-				}`, s.name, typ))
-			} else {
-				s.methods = append(s.methods, fmt.Sprintf(`
-				func (r %v) Value() %v {
-					return r.result().%v
-				}`, s.name, typ, accessor))
-			}
-
+			s.methods = append(s.methods, fmt.Sprintf(`
+			func (r *%v) Value() %v {
+				return %v(r)
+			}`, s.name, typ, accessor))
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Value() %v {
-				return node_value_struct[%v](r.__node)
+				return node_value_struct[%v](&r.__node)
 			}`, s.name, typ, typ))
 		}
 
 		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Set(v %v) error {
-			b, err := json.Marshal(v)
-			if err != nil { return err }
-
-			return r.setb(b)
+			return r.setv(v)
 		}
 		`, s.name, typ))
 	} else {
 		if mergeSet {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Set(v *%v) error {
-				incoming := v.currentJson()
-
-				return r.setMerge(incoming)
+				return r.setMerge(v)
 			}
 			`, s.name, s.name))
 		} else {
 			s.methods = append(s.methods, fmt.Sprintf(`
 			func (r %v) Set(v *%v) error {
-				incoming := v.currentJson()
-
-				return r.set(incoming)
+				return r.setnode(v)
 			}
 			`, s.name, s.name))
 		}
@@ -121,34 +98,42 @@ func (s *structType) AddIndexGetter(styp string, dtype string) {
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) At(i int) *%v {
 			return &%v{
-				__node: node_get[%v, %v](&r.__node, strconv.Itoa(i)),
+				__node: node_at[%v, %v](&r.__node, i),
 			}
 		}
 	`, s.name, styp, styp, s.name, styp))
 	appendType := "*" + styp
 	if dtype != "" {
 		appendType = dtype
-	}
-	s.methods = append(s.methods, fmt.Sprintf(`
+
+		s.methods = append(s.methods, fmt.Sprintf(`
 		func (r *%v) Append(v %v) error {
-			return r.At(-1).Set(v)
+			return node_array_append(&r.__node, v)
 		}
 	`, s.name, appendType))
+	} else {
+		s.methods = append(s.methods, fmt.Sprintf(`
+		func (r *%v) Append(v %v) error {
+			return node_array_append_node(&r.__node, &v.__node)
+		}
+	`, s.name, appendType))
+	}
+
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Len() int {
-			return node_array_len(r.__node)
+			return node_array_len(&r.__node)
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Clear() error {
-			return r.set("[]")
+			return r.set([]byte("[]"))
 		}
 	`, s.name))
 	s.methods = append(s.methods, fmt.Sprintf(`
 		func (r %v) Range() func(yield func(int, *%v) bool) {
-			return node_array_range(&r)
+			return node_array_range[*%v](&r)
 		}
-	`, s.name, styp))
+	`, s.name, styp, styp))
 }
 
 func (s *structType) AddAsGetter(name, styp string) {
@@ -599,12 +584,12 @@ func Gen(config Config) error {
 		return err
 	}
 
-	g.imports["github.com/tidwall/gjson"] = struct{}{}
-	g.imports["github.com/tidwall/sjson"] = struct{}{}
+	g.imports["github.com/ohler55/ojg/jp"] = struct{}{}
 	g.imports["encoding/json"] = struct{}{}
 	g.imports["sync/atomic"] = struct{}{}
 	g.imports["strconv"] = struct{}{}
 	g.imports["fmt"] = struct{}{}
+	g.imports["slices"] = struct{}{}
 
 	w := writer{g.config.Out}
 	w.Package(g.config.PackageName)

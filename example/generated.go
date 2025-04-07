@@ -262,7 +262,8 @@ func (r *__node[D]) JSON() []byte {
 	return b
 }
 
-func (r __node[D]) withSafe(safe bool) __node[D] {
+// Deprecated: not useful anymore
+func (r __node[D]) WithSafe(safe bool) __node[D] {
 	return r
 }
 
@@ -470,11 +471,6 @@ func (r *AllOf) GetShipping_address() *AllofShipping_address {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *AllOf) WithSafe(safe bool) *AllOf {
-	return r
-}
-
 func (r AllOf) Copy() *AllOf {
 	return &AllOf{
 		__node: r.copy(),
@@ -499,11 +495,6 @@ func (r *AllOfOneOf) GetData() *AllofoneofData {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *AllOfOneOf) WithSafe(safe bool) *AllOfOneOf {
-	return r
-}
-
 func (r AllOfOneOf) Copy() *AllOfOneOf {
 	return &AllOfOneOf{
 		__node: r.copy(),
@@ -526,11 +517,6 @@ func (r *AllofDefinitionsAddress) GetCity() *String {
 	return &String{
 		__node: node_get[AllofDefinitionsAddress, String](&r.__node, "city"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *AllofDefinitionsAddress) WithSafe(safe bool) *AllofDefinitionsAddress {
-	return r
 }
 
 func (r AllofDefinitionsAddress) Copy() *AllofDefinitionsAddress {
@@ -561,11 +547,6 @@ func (r *AllofShipping_address) GetType() *String {
 	return &String{
 		__node: node_get[AllofShipping_address, String](&r.__node, "type"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *AllofShipping_address) WithSafe(safe bool) *AllofShipping_address {
-	return r
 }
 
 func (r AllofShipping_address) Copy() *AllofShipping_address {
@@ -628,11 +609,6 @@ func (r *AllofoneofData) GetB() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *AllofoneofData) WithSafe(safe bool) *AllofoneofData {
-	return r
-}
-
 func (r AllofoneofData) Copy() *AllofoneofData {
 	return &AllofoneofData{
 		__node: r.copy(),
@@ -655,11 +631,6 @@ func (r *AllofoneofDataAllOf0OneOf0) GetA1() *String {
 	return &String{
 		__node: node_get[AllofoneofDataAllOf0OneOf0, String](&r.__node, "a1"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *AllofoneofDataAllOf0OneOf0) WithSafe(safe bool) *AllofoneofDataAllOf0OneOf0 {
-	return r
 }
 
 func (r AllofoneofDataAllOf0OneOf0) Copy() *AllofoneofDataAllOf0OneOf0 {
@@ -686,11 +657,6 @@ func (r *AllofoneofDataAllOf0OneOf1) GetA2() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *AllofoneofDataAllOf0OneOf1) WithSafe(safe bool) *AllofoneofDataAllOf0OneOf1 {
-	return r
-}
-
 func (r AllofoneofDataAllOf0OneOf1) Copy() *AllofoneofDataAllOf0OneOf1 {
 	return &AllofoneofDataAllOf0OneOf1{
 		__node: r.copy(),
@@ -713,11 +679,6 @@ func (r *AllofoneofDataAllOf2OneOf0) GetC1() *String {
 	return &String{
 		__node: node_get[AllofoneofDataAllOf2OneOf0, String](&r.__node, "c1"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *AllofoneofDataAllOf2OneOf0) WithSafe(safe bool) *AllofoneofDataAllOf2OneOf0 {
-	return r
 }
 
 func (r AllofoneofDataAllOf2OneOf0) Copy() *AllofoneofDataAllOf2OneOf0 {
@@ -744,11 +705,6 @@ func (r *AllofoneofDataAllOf2OneOf1) GetC2() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *AllofoneofDataAllOf2OneOf1) WithSafe(safe bool) *AllofoneofDataAllOf2OneOf1 {
-	return r
-}
-
 func (r AllofoneofDataAllOf2OneOf1) Copy() *AllofoneofDataAllOf2OneOf1 {
 	return &AllofoneofDataAllOf2OneOf1{
 		__node: r.copy(),
@@ -771,11 +727,6 @@ func (r *AllofoneofDataAllOf3OneOf1) GetD2() *String {
 	return &String{
 		__node: node_get[AllofoneofDataAllOf3OneOf1, String](&r.__node, "d2"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *AllofoneofDataAllOf3OneOf1) WithSafe(safe bool) *AllofoneofDataAllOf3OneOf1 {
-	return r
 }
 
 func (r AllofoneofDataAllOf3OneOf1) Copy() *AllofoneofDataAllOf3OneOf1 {
@@ -808,11 +759,6 @@ func (r *ArrayArray) GetTopfield2() *ArrayTopfield2 {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *ArrayArray) WithSafe(safe bool) *ArrayArray {
-	return r
-}
-
 func (r ArrayArray) Copy() *ArrayArray {
 	return &ArrayArray{
 		__node: r.copy(),
@@ -841,11 +787,6 @@ func (r *ArrayDefinitionsDef1) GetField2() *String {
 	return &String{
 		__node: node_get[ArrayDefinitionsDef1, String](&r.__node, "field2"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *ArrayDefinitionsDef1) WithSafe(safe bool) *ArrayDefinitionsDef1 {
-	return r
 }
 
 func (r ArrayDefinitionsDef1) Copy() *ArrayDefinitionsDef1 {
@@ -886,11 +827,6 @@ func (r ArrayTopfield1) Len() int {
 
 func (r ArrayTopfield1) Range() func(yield func(int, *ArrayDefinitionsDef1) bool) {
 	return node_array_range[*ArrayDefinitionsDef1](&r)
-}
-
-// Deprecated: not useful anymore
-func (r *ArrayTopfield1) WithSafe(safe bool) *ArrayTopfield1 {
-	return r
 }
 
 func (r ArrayTopfield1) Copy() *ArrayTopfield1 {
@@ -936,11 +872,6 @@ func (r ArrayTopfield2) Range() func(yield func(int, *String) bool) {
 	return node_array_range[*String](&r)
 }
 
-// Deprecated: not useful anymore
-func (r *ArrayTopfield2) WithSafe(safe bool) *ArrayTopfield2 {
-	return r
-}
-
 func (r ArrayTopfield2) Copy() *ArrayTopfield2 {
 	return &ArrayTopfield2{
 		__node: r.copy(),
@@ -971,11 +902,6 @@ func (r *ArraysSchemaArraysSchema) GetVegetables() *ArraysSchemaVegetables {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *ArraysSchemaArraysSchema) WithSafe(safe bool) *ArraysSchemaArraysSchema {
-	return r
-}
-
 func (r ArraysSchemaArraysSchema) Copy() *ArraysSchemaArraysSchema {
 	return &ArraysSchemaArraysSchema{
 		__node: r.copy(),
@@ -1004,11 +930,6 @@ func (r *ArraysSchemaDefsVeggie) GetVeggieName() *String {
 	return &String{
 		__node: node_get[ArraysSchemaDefsVeggie, String](&r.__node, "veggieName"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *ArraysSchemaDefsVeggie) WithSafe(safe bool) *ArraysSchemaDefsVeggie {
-	return r
 }
 
 func (r ArraysSchemaDefsVeggie) Copy() *ArraysSchemaDefsVeggie {
@@ -1054,11 +975,6 @@ func (r ArraysSchemaFruits) Range() func(yield func(int, *String) bool) {
 	return node_array_range[*String](&r)
 }
 
-// Deprecated: not useful anymore
-func (r *ArraysSchemaFruits) WithSafe(safe bool) *ArraysSchemaFruits {
-	return r
-}
-
 func (r ArraysSchemaFruits) Copy() *ArraysSchemaFruits {
 	return &ArraysSchemaFruits{
 		__node: r.copy(),
@@ -1099,11 +1015,6 @@ func (r ArraysSchemaVegetables) Range() func(yield func(int, *ArraysSchemaDefsVe
 	return node_array_range[*ArraysSchemaDefsVeggie](&r)
 }
 
-// Deprecated: not useful anymore
-func (r *ArraysSchemaVegetables) WithSafe(safe bool) *ArraysSchemaVegetables {
-	return r
-}
-
 func (r ArraysSchemaVegetables) Copy() *ArraysSchemaVegetables {
 	return &ArraysSchemaVegetables{
 		__node: r.copy(),
@@ -1123,11 +1034,6 @@ func (r *Bool) Value() bool {
 }
 func (r *Bool) Set(v bool) error {
 	return r.setv(v)
-}
-
-// Deprecated: not useful anymore
-func (r *Bool) WithSafe(safe bool) *Bool {
-	return r
 }
 
 func (r Bool) Copy() *Bool {
@@ -1154,11 +1060,6 @@ func (r *DNestedTitle1) GetD1() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *DNestedTitle1) WithSafe(safe bool) *DNestedTitle1 {
-	return r
-}
-
 func (r DNestedTitle1) Copy() *DNestedTitle1 {
 	return &DNestedTitle1{
 		__node: r.copy(),
@@ -1180,11 +1081,6 @@ func (r *Float64) Set(v float64) error {
 	return r.setv(v)
 }
 
-// Deprecated: not useful anymore
-func (r *Float64) WithSafe(safe bool) *Float64 {
-	return r
-}
-
 func (r Float64) Copy() *Float64 {
 	return &Float64{
 		__node: r.copy(),
@@ -1204,11 +1100,6 @@ func (r *Int64) Value() int64 {
 }
 func (r *Int64) Set(v int64) error {
 	return r.setv(v)
-}
-
-// Deprecated: not useful anymore
-func (r *Int64) WithSafe(safe bool) *Int64 {
-	return r
 }
 
 func (r Int64) Copy() *Int64 {
@@ -1245,11 +1136,6 @@ func (r *LargeFileItems) GetType() *String {
 	return &String{
 		__node: node_get[LargeFileItems, String](&r.__node, "type"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *LargeFileItems) WithSafe(safe bool) *LargeFileItems {
-	return r
 }
 
 func (r LargeFileItems) Copy() *LargeFileItems {
@@ -1300,11 +1186,6 @@ func (r *LargeFileItemsActor) GetUrl() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *LargeFileItemsActor) WithSafe(safe bool) *LargeFileItemsActor {
-	return r
-}
-
 func (r LargeFileItemsActor) Copy() *LargeFileItemsActor {
 	return &LargeFileItemsActor{
 		__node: r.copy(),
@@ -1343,11 +1224,6 @@ func (r LargeFileLargeFile) Len() int {
 
 func (r LargeFileLargeFile) Range() func(yield func(int, *LargeFileItems) bool) {
 	return node_array_range[*LargeFileItems](&r)
-}
-
-// Deprecated: not useful anymore
-func (r *LargeFileLargeFile) WithSafe(safe bool) *LargeFileLargeFile {
-	return r
 }
 
 func (r LargeFileLargeFile) Copy() *LargeFileLargeFile {
@@ -1390,11 +1266,6 @@ func (r NestedarraysField1) Range() func(yield func(int, *NestedarraysField1Item
 	return node_array_range[*NestedarraysField1Items](&r)
 }
 
-// Deprecated: not useful anymore
-func (r *NestedarraysField1) WithSafe(safe bool) *NestedarraysField1 {
-	return r
-}
-
 func (r NestedarraysField1) Copy() *NestedarraysField1 {
 	return &NestedarraysField1{
 		__node: r.copy(),
@@ -1417,11 +1288,6 @@ func (r *NestedarraysField1Items) GetField2() *NestedarraysField1ItemsField2 {
 	return &NestedarraysField1ItemsField2{
 		__node: node_get[NestedarraysField1Items, NestedarraysField1ItemsField2](&r.__node, "field2"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *NestedarraysField1Items) WithSafe(safe bool) *NestedarraysField1Items {
-	return r
 }
 
 func (r NestedarraysField1Items) Copy() *NestedarraysField1Items {
@@ -1464,11 +1330,6 @@ func (r NestedarraysField1ItemsField2) Range() func(yield func(int, *SomeTitle) 
 	return node_array_range[*SomeTitle](&r)
 }
 
-// Deprecated: not useful anymore
-func (r *NestedarraysField1ItemsField2) WithSafe(safe bool) *NestedarraysField1ItemsField2 {
-	return r
-}
-
 func (r NestedarraysField1ItemsField2) Copy() *NestedarraysField1ItemsField2 {
 	return &NestedarraysField1ItemsField2{
 		__node: r.copy(),
@@ -1493,11 +1354,6 @@ func (r *NestedarraysNestedarrays) GetField1() *NestedarraysField1 {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *NestedarraysNestedarrays) WithSafe(safe bool) *NestedarraysNestedarrays {
-	return r
-}
-
 func (r NestedarraysNestedarrays) Copy() *NestedarraysNestedarrays {
 	return &NestedarraysNestedarrays{
 		__node: r.copy(),
@@ -1520,11 +1376,6 @@ func (r *OneOf) GetData() *OneofData {
 	return &OneofData{
 		__node: node_get[OneOf, OneofData](&r.__node, "data"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *OneOf) WithSafe(safe bool) *OneOf {
-	return r
 }
 
 func (r OneOf) Copy() *OneOf {
@@ -1557,11 +1408,6 @@ func (r *OneOfRootObj) AsVehicle() *Vehicle {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *OneOfRootObj) WithSafe(safe bool) *OneOfRootObj {
-	return r
-}
-
 func (r OneOfRootObj) Copy() *OneOfRootObj {
 	return &OneOfRootObj{
 		__node: r.copy(),
@@ -1590,11 +1436,6 @@ func (r *OneofData) AsVehicle() *Vehicle {
 	return &Vehicle{
 		__node: node_get_as[OneofData, Vehicle](&r.__node),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *OneofData) WithSafe(safe bool) *OneofData {
-	return r
 }
 
 func (r OneofData) Copy() *OneofData {
@@ -1633,11 +1474,6 @@ func (r *Person) GetSport() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *Person) WithSafe(safe bool) *Person {
-	return r
-}
-
 func (r Person) Copy() *Person {
 	return &Person{
 		__node: r.copy(),
@@ -1662,11 +1498,6 @@ func (r *SomeTitle) GetField3() *String {
 	}
 }
 
-// Deprecated: not useful anymore
-func (r *SomeTitle) WithSafe(safe bool) *SomeTitle {
-	return r
-}
-
 func (r SomeTitle) Copy() *SomeTitle {
 	return &SomeTitle{
 		__node: r.copy(),
@@ -1686,11 +1517,6 @@ func (r *String) Value() string {
 }
 func (r *String) Set(v string) error {
 	return r.setv(v)
-}
-
-// Deprecated: not useful anymore
-func (r *String) WithSafe(safe bool) *String {
-	return r
 }
 
 func (r String) Copy() *String {
@@ -1721,11 +1547,6 @@ func (r *Vehicle) GetPrice() *Int64 {
 	return &Int64{
 		__node: node_get[Vehicle, Int64](&r.__node, "price"),
 	}
-}
-
-// Deprecated: not useful anymore
-func (r *Vehicle) WithSafe(safe bool) *Vehicle {
-	return r
 }
 
 func (r Vehicle) Copy() *Vehicle {

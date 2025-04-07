@@ -264,7 +264,8 @@ func (r *__node[D]) JSON() []byte {
     return b
 }
 
-func (r __node[D]) withSafe(safe bool) __node[D] {
+// Deprecated: not useful anymore
+func (r __node[D]) WithSafe(safe bool) __node[D] {
     return r
 }
 

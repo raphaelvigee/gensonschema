@@ -451,6 +451,30 @@ func (r __node[D]) defaultJson() []byte {
 	return s
 }
 
+type Address struct {
+	__node[Address]
+}
+
+func (r Address) Set(v *Address) error {
+	return r.setnode(v)
+}
+
+func (r *Address) GetCity() *String {
+	return &String{
+		__node: node_get[Address, String](&r.__node, "city"),
+	}
+}
+
+func (r Address) Copy() *Address {
+	return &Address{
+		__node: r.copy(),
+	}
+}
+
+func (r Address) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
 type AllOf struct {
 	__node[AllOf]
 }
@@ -459,9 +483,9 @@ func (r AllOf) Set(v *AllOf) error {
 	return r.setnode(v)
 }
 
-func (r *AllOf) GetBilling_address() *AllofDefinitionsAddress {
-	return &AllofDefinitionsAddress{
-		__node: node_get[AllOf, AllofDefinitionsAddress](&r.__node, "billing_address"),
+func (r *AllOf) GetBilling_address() *Address {
+	return &Address{
+		__node: node_get[AllOf, Address](&r.__node, "billing_address"),
 	}
 }
 
@@ -505,36 +529,24 @@ func (r AllOfOneOf) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
-type AllofDefinitionsAddress struct {
-	__node[AllofDefinitionsAddress]
-}
-
-func (r AllofDefinitionsAddress) Set(v *AllofDefinitionsAddress) error {
-	return r.setnode(v)
-}
-
-func (r *AllofDefinitionsAddress) GetCity() *String {
-	return &String{
-		__node: node_get[AllofDefinitionsAddress, String](&r.__node, "city"),
-	}
-}
-
-func (r AllofDefinitionsAddress) Copy() *AllofDefinitionsAddress {
-	return &AllofDefinitionsAddress{
-		__node: r.copy(),
-	}
-}
-
-func (r AllofDefinitionsAddress) typeDefaultJson() []byte {
-	return []byte("{}")
-}
-
 type AllofShipping_address struct {
 	__node[AllofShipping_address]
 }
 
 func (r AllofShipping_address) Set(v *AllofShipping_address) error {
 	return r.setMerge(v)
+}
+
+func (r *AllofShipping_address) AsAddress() *Address {
+	return &Address{
+		__node: node_get_as[AllofShipping_address, Address](&r.__node),
+	}
+}
+
+func (r *AllofShipping_address) AsAllOf1() *AllofShipping_addressAllOf1 {
+	return &AllofShipping_addressAllOf1{
+		__node: node_get_as[AllofShipping_address, AllofShipping_addressAllOf1](&r.__node),
+	}
 }
 
 func (r *AllofShipping_address) GetCity() *String {
@@ -559,12 +571,42 @@ func (r AllofShipping_address) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
+type AllofShipping_addressAllOf1 struct {
+	__node[AllofShipping_addressAllOf1]
+}
+
+func (r AllofShipping_addressAllOf1) Set(v *AllofShipping_addressAllOf1) error {
+	return r.setnode(v)
+}
+
+func (r *AllofShipping_addressAllOf1) GetType() *String {
+	return &String{
+		__node: node_get[AllofShipping_addressAllOf1, String](&r.__node, "type"),
+	}
+}
+
+func (r AllofShipping_addressAllOf1) Copy() *AllofShipping_addressAllOf1 {
+	return &AllofShipping_addressAllOf1{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofShipping_addressAllOf1) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
 type AllofoneofData struct {
 	__node[AllofoneofData]
 }
 
 func (r AllofoneofData) Set(v *AllofoneofData) error {
 	return r.setMerge(v)
+}
+
+func (r *AllofoneofData) AsAllOf0() *AllofoneofDataAllOf0 {
+	return &AllofoneofDataAllOf0{
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf0](&r.__node),
+	}
 }
 
 func (r *AllofoneofData) AsAllOf0OneOf0() *AllofoneofDataAllOf0OneOf0 {
@@ -579,6 +621,18 @@ func (r *AllofoneofData) AsAllOf0OneOf1() *AllofoneofDataAllOf0OneOf1 {
 	}
 }
 
+func (r *AllofoneofData) AsAllOf1() *AllofoneofDataAllOf1 {
+	return &AllofoneofDataAllOf1{
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf1](&r.__node),
+	}
+}
+
+func (r *AllofoneofData) AsAllOf3() *AllofoneofDataAllOf3 {
+	return &AllofoneofDataAllOf3{
+		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf3](&r.__node),
+	}
+}
+
 func (r *AllofoneofData) AsAllOf3OneOf1() *AllofoneofDataAllOf3OneOf1 {
 	return &AllofoneofDataAllOf3OneOf1{
 		__node: node_get_as[AllofoneofData, AllofoneofDataAllOf3OneOf1](&r.__node),
@@ -588,6 +642,12 @@ func (r *AllofoneofData) AsAllOf3OneOf1() *AllofoneofDataAllOf3OneOf1 {
 func (r *AllofoneofData) AsDNestedTitle1() *DNestedTitle1 {
 	return &DNestedTitle1{
 		__node: node_get_as[AllofoneofData, DNestedTitle1](&r.__node),
+	}
+}
+
+func (r *AllofoneofData) AsNamedOneOf() *NamedOneOf {
+	return &NamedOneOf{
+		__node: node_get_as[AllofoneofData, NamedOneOf](&r.__node),
 	}
 }
 
@@ -616,6 +676,36 @@ func (r AllofoneofData) Copy() *AllofoneofData {
 }
 
 func (r AllofoneofData) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
+type AllofoneofDataAllOf0 struct {
+	__node[AllofoneofDataAllOf0]
+}
+
+func (r AllofoneofDataAllOf0) Set(v *AllofoneofDataAllOf0) error {
+	return r.setnode(v)
+}
+
+func (r *AllofoneofDataAllOf0) AsOneOf0() *AllofoneofDataAllOf0OneOf0 {
+	return &AllofoneofDataAllOf0OneOf0{
+		__node: node_get_as[AllofoneofDataAllOf0, AllofoneofDataAllOf0OneOf0](&r.__node),
+	}
+}
+
+func (r *AllofoneofDataAllOf0) AsOneOf1() *AllofoneofDataAllOf0OneOf1 {
+	return &AllofoneofDataAllOf0OneOf1{
+		__node: node_get_as[AllofoneofDataAllOf0, AllofoneofDataAllOf0OneOf1](&r.__node),
+	}
+}
+
+func (r AllofoneofDataAllOf0) Copy() *AllofoneofDataAllOf0 {
+	return &AllofoneofDataAllOf0{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf0) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -667,6 +757,30 @@ func (r AllofoneofDataAllOf0OneOf1) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
+type AllofoneofDataAllOf1 struct {
+	__node[AllofoneofDataAllOf1]
+}
+
+func (r AllofoneofDataAllOf1) Set(v *AllofoneofDataAllOf1) error {
+	return r.setnode(v)
+}
+
+func (r *AllofoneofDataAllOf1) GetB() *String {
+	return &String{
+		__node: node_get[AllofoneofDataAllOf1, String](&r.__node, "b"),
+	}
+}
+
+func (r AllofoneofDataAllOf1) Copy() *AllofoneofDataAllOf1 {
+	return &AllofoneofDataAllOf1{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf1) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
 type AllofoneofDataAllOf2OneOf0 struct {
 	__node[AllofoneofDataAllOf2OneOf0]
 }
@@ -712,6 +826,36 @@ func (r AllofoneofDataAllOf2OneOf1) Copy() *AllofoneofDataAllOf2OneOf1 {
 }
 
 func (r AllofoneofDataAllOf2OneOf1) typeDefaultJson() []byte {
+	return []byte("{}")
+}
+
+type AllofoneofDataAllOf3 struct {
+	__node[AllofoneofDataAllOf3]
+}
+
+func (r AllofoneofDataAllOf3) Set(v *AllofoneofDataAllOf3) error {
+	return r.setnode(v)
+}
+
+func (r *AllofoneofDataAllOf3) AsDNestedTitle1() *DNestedTitle1 {
+	return &DNestedTitle1{
+		__node: node_get_as[AllofoneofDataAllOf3, DNestedTitle1](&r.__node),
+	}
+}
+
+func (r *AllofoneofDataAllOf3) AsOneOf1() *AllofoneofDataAllOf3OneOf1 {
+	return &AllofoneofDataAllOf3OneOf1{
+		__node: node_get_as[AllofoneofDataAllOf3, AllofoneofDataAllOf3OneOf1](&r.__node),
+	}
+}
+
+func (r AllofoneofDataAllOf3) Copy() *AllofoneofDataAllOf3 {
+	return &AllofoneofDataAllOf3{
+		__node: r.copy(),
+	}
+}
+
+func (r AllofoneofDataAllOf3) typeDefaultJson() []byte {
 	return []byte("{}")
 }
 
@@ -1234,6 +1378,36 @@ func (r LargeFileLargeFile) Copy() *LargeFileLargeFile {
 
 func (r LargeFileLargeFile) typeDefaultJson() []byte {
 	return []byte("[]")
+}
+
+type NamedOneOf struct {
+	__node[NamedOneOf]
+}
+
+func (r NamedOneOf) Set(v *NamedOneOf) error {
+	return r.setnode(v)
+}
+
+func (r *NamedOneOf) AsOneOf0() *AllofoneofDataAllOf2OneOf0 {
+	return &AllofoneofDataAllOf2OneOf0{
+		__node: node_get_as[NamedOneOf, AllofoneofDataAllOf2OneOf0](&r.__node),
+	}
+}
+
+func (r *NamedOneOf) AsOneOf1() *AllofoneofDataAllOf2OneOf1 {
+	return &AllofoneofDataAllOf2OneOf1{
+		__node: node_get_as[NamedOneOf, AllofoneofDataAllOf2OneOf1](&r.__node),
+	}
+}
+
+func (r NamedOneOf) Copy() *NamedOneOf {
+	return &NamedOneOf{
+		__node: r.copy(),
+	}
+}
+
+func (r NamedOneOf) typeDefaultJson() []byte {
+	return []byte("{}")
 }
 
 type NestedarraysField1 struct {

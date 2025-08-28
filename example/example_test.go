@@ -5,10 +5,11 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	gen "github.com/raphaelvigee/gensonschema/example"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 var sample []byte
@@ -138,6 +139,9 @@ func TestSetAllOf(t *testing.T) {
 
 	err = obj.GetShipping_address().GetType().Set("business")
 	require.NoError(t, err)
+
+	assert.Equal(t, "Paris", obj.GetShipping_address().AsAddress().GetCity().Value())
+	assert.Equal(t, "business", obj.GetShipping_address().AsAllOf1().GetType().Value())
 
 	actual, err := json.Marshal(obj)
 	require.NoError(t, err)

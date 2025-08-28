@@ -4,8 +4,6 @@ import (
 	_ "embed"
 	"errors"
 	"fmt"
-	"github.com/santhosh-tekuri/jsonschema/v5"
-	"golang.org/x/exp/maps"
 	"io"
 	"path/filepath"
 	"regexp"
@@ -13,6 +11,9 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/santhosh-tekuri/jsonschema/v5"
+	"golang.org/x/exp/maps"
 )
 
 type structType struct {
@@ -558,7 +559,24 @@ func (g *generator) namedAllOfTypeFor(sch *jsonschema.Schema) (string, string, e
 
 	name := g.schemaToTypeName(sch)
 
-	return g.buildTypeFor(name, schs, true)
+	goType, _, err := g.buildTypeFor(name, schs, true)
+	if err != nil {
+		return "", "", err
+	}
+
+	ss := g.types[goType]
+
+	for i, sch := range sch.AllOf {
+		chStype, _, err := g.genTypeFor("", sch)
+		if err != nil {
+			return "", "", err
+		}
+
+		fieldName := g.compositeName("AllOf", i, sch)
+		ss.AddAsGetter(fieldName, chStype)
+	}
+
+	return goType, "", err
 }
 
 //go:embed utils.go.tpl

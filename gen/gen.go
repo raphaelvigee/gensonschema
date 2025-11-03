@@ -18,6 +18,7 @@ import (
 
 type structType struct {
 	name    string
+	comment string
 	methods []string
 
 	asGetters map[string]struct{}
@@ -85,14 +86,16 @@ func (s *structType) MakeStoreWith(typ, defaultJson string, mergeSet bool) {
 	}
 }
 
-func (s *structType) AddGetter(name, path, styp string) {
+func (s *structType) AddGetter(name, path, propdesc, styp string) {
+	descCmnt := toComment(propdesc)
+
 	s.methods = append(s.methods, fmt.Sprintf(`
-		func (r *%v) Get%v() *%v {
+		%sfunc (r *%v) Get%v() *%v {
 			return &%v{
 				__node: node_get[%v, %v](&r.__node, %q),
 			}
 		}
-	`, s.name, name, styp, styp, s.name, styp, path))
+	`, descCmnt, s.name, name, styp, styp, s.name, styp, path))
 }
 
 func (s *structType) AddIndexGetter(styp string, dtype string) {
@@ -196,8 +199,9 @@ func (w writer) Import(alias, imprt string) {
 	w.w.Write([]byte("\n"))
 }
 
-func (w writer) StructStart(name string) {
-	w.w.Write([]byte(fmt.Sprintf("type %v struct {\n", name)))
+func (w writer) StructStart(str *structType) {
+	desc := toComment(str.comment)
+	w.w.Write([]byte(fmt.Sprintf("%stype %v struct {\n", desc, str.name)))
 }
 
 func (w writer) StructEnd() {
@@ -304,7 +308,7 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 			dType = "[]" + itemDtype
 		}
 
-		styp := &structType{name: name}
+		styp := &structType{name: name, comment: sch.Description}
 		styp.MakeStore(dType, "[]")
 
 		styp.AddIndexGetter(itemStyp, itemDtype)
@@ -318,11 +322,12 @@ func (g *generator) genTypeFor(name string, sch *jsonschema.Schema) (string, str
 		return g.genTypeForPrimitive(sch)
 	}
 
-	return g.buildTypeFor(name, []*jsonschema.Schema{sch}, false)
+	desc := sch.Description
+	return g.buildTypeFor(name, desc, []*jsonschema.Schema{sch}, false)
 }
 
-func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSet bool) (string, string, error) {
-	storeType := &structType{name: name}
+func (g *generator) buildTypeFor(name string, desc string, schs []*jsonschema.Schema, mergeSet bool) (string, string, error) {
+	storeType := &structType{name: name, comment: desc}
 
 	commonGoType := ""
 
@@ -374,8 +379,9 @@ func (g *generator) buildTypeFor(name string, schs []*jsonschema.Schema, mergeSe
 			}
 
 			name := g.propertyToFieldName(propName)
+			propdesc := fieldSchema.Description
 
-			storeType.AddGetter(name, propName, styp)
+			storeType.AddGetter(name, propName, propdesc, styp)
 		}
 	}
 
@@ -559,7 +565,7 @@ func (g *generator) namedAllOfTypeFor(sch *jsonschema.Schema) (string, string, e
 
 	name := g.schemaToTypeName(sch)
 
-	goType, _, err := g.buildTypeFor(name, schs, true)
+	goType, _, err := g.buildTypeFor(name, sch.Description, schs, true)
 	if err != nil {
 		return "", "", err
 	}
@@ -629,7 +635,7 @@ func Gen(config Config) error {
 
 	for _, typeName := range typeNames {
 		str := g.types[typeName]
-		w.StructStart(str.name)
+		w.StructStart(str)
 		w.Field("", fmt.Sprintf("__node[%v]", str.name), "")
 		w.StructEnd()
 
@@ -641,4 +647,13 @@ func Gen(config Config) error {
 	}
 
 	return nil
+}
+
+func toComment(str string) string {
+	comment := ""
+	for _, line := range strings.Split(str, "\n") {
+		line = strings.TrimSpace(line)
+		comment += fmt.Sprintf("// %s\n", line)
+	}
+	return comment
 }
